@@ -1,3 +1,7 @@
+//PYchat
+
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -23,7 +27,7 @@
         --btn-border: #d7dded;
         --btn-hover: #dfe7fa;
         --hover-bg: #eef2fb;
-        --loading-bg: #ffffff;
+        --loading-bg: #c5c5c5;
         --shadow: 0 1px 3px rgba(28,35,51,0.08);
     }
     body.theme-light {
@@ -375,7 +379,7 @@ body:not(.show-time) .msgTime { display: none; }
 </div>
 <div id="introScreen" style="display:none;"><canvas id="introCanvas"></canvas><div class="introCore" id="introNameWrap"></div><div class="introSub" id="introSub">Connexion des reseaux neuronaux locaux...</div></div>
 <div class="dropOverlay" id="dropOverlay"><div class="dropMsg">📂 Depose ton fichier ici pour l'envoyer a l'IA</div></div>
-<div class="sidebar"><h2 id="sidebarTitle">PYchat</h2><button id="newConvBtn" class="btn" style="margin-bottom:10px;">+ Nouvelle discussion</button><button id="histToggle" class="histToggle" type="button"><span>Historique</span><span class="chev">&#9662;</span></button><div class="convList" id="convList"></div></div>
+<div class="sidebar"><h2 id="sidebarTitle">PYchat</h2><button id="newConvBtn" class="btn" style="margin-bottom:10px;">+ Nouvelle discussion</button><input id="convSearch" type="search" placeholder="Rechercher une discussion..." style="width:100%;padding:8px 10px;margin-bottom:8px;border:1px solid var(--input-border);border-radius:8px;background:var(--input-bg);color:var(--text-light);font-size:13px;"><button id="histToggle" class="histToggle" type="button"><span>Historique</span><span class="chev">&#9662;</span></button><div class="convList" id="convList"></div></div>
 <div class="main">
     <div class="header"><div class="title-container"><div class="title" id="chatTitle">Aucune discussion</div><div class="status-indicator" id="modelStatus">IA en attente...</div></div><div class="actions"><button id="btnRename" title="Renommer">R</button><button id="btnDuplicate" title="Dupliquer">D</button><button id="btnDelete" title="Supprimer">S</button><button id="btnSoundToggle" class="soundBtnHeader" title="Activer/couper les sons">🔊</button><button id="btnSettingsToggle" title="Parametres">P</button></div></div>
     <div class="chatArea" id="chatArea"></div>
@@ -385,7 +389,7 @@ body:not(.show-time) .msgTime { display: none; }
         <input type="file" id="attachInput" style="display:none;" multiple>
         <button id="btnAttach" title="Joindre un fichier">📎</button>
         <div class="inputWrapper">
-            <div class="suggestionOverlay" id="suggestionOverlay"></div>
+                <div class="suggestionOverlay" id="suggestionOverlay"></div>
             <div id="ghostOverlay"></div>
             <input type="text" id="userInput" placeholder="Demander a PYchat..." autocomplete="off">
         </div>
@@ -475,6 +479,7 @@ body:not(.show-time) .msgTime { display: none; }
     </div>
     <div class="settingsCard"><h4>⌨️ Saisie</h4>
     <div class="setting"><label><input type="checkbox" id="chkGhost" checked> Suggestions fantomes</label></div>
+    <div class="setting"><label>Delai des suggestions : <span id="rangeGhostDelayValue">60ms</span></label><input type="range" id="rangeGhostDelay" min="0" max="500" step="10"></div>
     <div class="setting"><label><input type="checkbox" id="chkArrowHistory" checked> Fleche haut = message precedent</label></div>
     <div class="setting"><label><input type="checkbox" id="chkTrim" checked> Nettoyer les espaces superflus</label></div>
     <div class="setting"><label><input type="checkbox" id="chkSpellcheck"> Correcteur orthographique du navigateur</label></div>
@@ -502,6 +507,7 @@ body:not(.show-time) .msgTime { display: none; }
     <div class="setting"><label><input type="checkbox" id="chkRawCorpus" checked> Activer le corpus secondaire</label></div>
     <div class="setting"><div class="rangeRow"><label for="rangeRawThreshold">Seuil de bascule</label><span class="rangeValue" id="rangeRawThresholdValue">40%</span></div><input type="range" id="rangeRawThreshold" min="0" max="100" value="40" style="width:100%;"></div>
     <div class="setting"><label><input type="checkbox" id="chkRawSource"> Indiquer la source de la reponse</label></div>
+    <div class="setting"><div class="rangeRow"><label for="rangeCorpusSize">Taille cible du corpus</label><span class="rangeValue" id="rangeCorpusSizeValue">1024Ko</span></div><input type="range" id="rangeCorpusSize" min="64" max="4096" step="64" value="1024" style="width:100%;"><span class="hint">Le corpus brut est complete automatiquement par des phrases generees sur une vingtaine de themes jusqu'a atteindre cette taille (1024 Ko = 1 Mo). Une valeur plus elevee donne plus de matiere a l'IA mais ralentit la recherche.</span></div>
     </div>
 
     <div class="settingsCard adminCard"><h4>🔑 Mode admin <span class="adminBadge">ADMIN ACTIF</span></h4>
@@ -518,7 +524,7 @@ body:not(.show-time) .msgTime { display: none; }
     <div class="setting"><label><input type="checkbox" id="chkUnlockTheme"> Deverrouiller le theme sombre</label></div>
     <div class="setting"><label><input type="checkbox" id="chkEngineLogs"> Journaliser le moteur de correspondance</label></div>
     <div class="setting"><label><input type="checkbox" id="chkRawDebug"> Afficher l'extrait brut sans reecriture</label></div>
-    <div class="setting"><div class="rangeRow"><label for="rangeMarkovDepth">Profondeur Markov</label><span class="rangeValue" id="rangeMarkovDepthValue">1</span></div><input type="range" id="rangeMarkovDepth" min="1" max="4" value="1" style="width:100%;"></div>
+    <div class="setting"><div class="rangeRow"><label for="rangeMarkovDepth">Profondeur Markov (ordre N)</label><span class="rangeValue" id="rangeMarkovDepthValue">5</span></div><input type="range" id="rangeMarkovDepth" min="1" max="8" value="5" style="width:100%;"><span class="hint">Nombre de mots precedents pris en compte pour choisir le mot suivant lors de la reecriture. Plus eleve = plus fidele au corpus original, moins "creatif".</span></div>
     <div class="setting"><label><input type="checkbox" id="chkRawStats"> Statistiques du corpus brut dans la console dev</label></div>
     </div>
 
@@ -549,7 +555,7 @@ let data = {
     settings: {
         autoSave: true, limit: 100, compress: true,
         aiName: 'PYchat', userName: '', theme: 'dark',
-        markovCreativity: 4, guardrailsEnabled: true, profanityFilter: true,
+        markovCreativity: 4, markovDepth: 5, guardrailsEnabled: true, profanityFilter: true,
         soundsEnabled: true, soundVolume: 50,
         imageGen: { complexity: 60, randomPalette: false },
         wikipedia: { enabled: true, language: 'fr', results: 1, snippetLength: 200, showLink: true, fallback: true }
@@ -632,6 +638,48 @@ const qaPairs = [
     { question: "comment fonctionne le soleil", reponse: "Le Soleil ☀️ est une gigantesque boule de plasma 🔥 où la fusion nucléaire ⚛️ transforme l'hydrogène en hélium ✨. Cette réaction libère une énergie phénoménale 💥, sous forme de lumière 💡 et de chaleur 🌡️, qui traverse 150 millions de km 🚀 pour arriver jusqu'à nous 🌍" },
     { question: "qu'est-ce que l'adn", reponse: "L'ADN 🧬 (acide désoxyribonucléique) est la molécule qui stocke ton code génétique 🔐. Sa forme en double hélice 🌀 a été décrite en 1953 par Watson, Crick et Franklin 👩‍🔬. Il est composé de 4 bases 🔤 : A, T, G, C. C'est ta recette d'assemblage biologique 🍳✨" },
     { question: "qu'est-ce qu'un trou noir", reponse: "Un trou noir 🕳️🌌 est une région de l'espace-temps où la gravité 💫 est si intense que même la lumière 💡 ne peut s'en échapper. Sa frontière s'appelle horizon des événements 🌀. Le premier photographié 📸 fut M87* en 2019, un géant supermassif de 6,5 milliards de masses solaires 🤯" },
+    { question: "qu'est-ce qu'une galaxie", reponse: "Une galaxie 🌌 est un immense ensemble d'étoiles ⭐, de gaz, de poussières et de matière noire 🌑 liés par la gravité. La Voie lactée 🌀 contient des centaines de milliards d'étoiles, dont le Soleil ☀️" },
+    { question: "qu'est-ce qu'une planète", reponse: "Une planète 🪐 est un corps céleste qui orbite autour d'une étoile ⭐, est assez massif pour être presque rond et a nettoyé son voisinage orbital. La Terre 🌍 est une planète rocheuse habitable connue" },
+    { question: "qu'est-ce qu'une lune", reponse: "Une lune 🌕 est un satellite naturel qui orbite autour d'une planète ou d'un autre corps. La Lune de la Terre 🌍 influence les marées 🌊 et stabilise en partie l'axe terrestre" },
+    { question: "qu'est-ce qu'une éclipse", reponse: "Une éclipse 🌑 se produit lorsqu'un astre en masque un autre. Lors d'une éclipse solaire ☀️, la Lune passe devant le Soleil ; lors d'une éclipse lunaire 🌕, la Terre projette son ombre sur la Lune" },
+    { question: "pourquoi le ciel est bleu", reponse: "Le ciel est bleu 🔵 parce que l'atmosphère diffuse davantage les courtes longueurs d'onde de la lumière solaire, notamment le bleu, que les longues longueurs d'onde comme le rouge 🌈" },
+    { question: "qu'est-ce qu'un séisme", reponse: "Un séisme 🌍 est une vibration du sol provoquée par la libération soudaine d'énergie dans la croûte terrestre, souvent le long d'une faille. Sa magnitude mesure l'énergie libérée" },
+    { question: "qu'est-ce qu'un volcan", reponse: "Un volcan 🌋 est une ouverture de la croûte terrestre par laquelle peuvent sortir du magma, des gaz et des cendres. Le magma devient de la lave lorsqu'il atteint la surface 🔥" },
+    { question: "qu'est-ce que le climat", reponse: "Le climat 🌦️ décrit les conditions moyennes de l'atmosphère dans une région sur une longue période. La météo concerne plutôt l'état de l'atmosphère à court terme ⏱️" },
+    { question: "qu'est-ce que le réchauffement climatique", reponse: "Le réchauffement climatique 🌡️ désigne l'augmentation durable de la température moyenne de la Terre, principalement liée aux émissions humaines de gaz à effet de serre comme le CO₂ 🌍" },
+    { question: "qu'est-ce qu'un écosystème", reponse: "Un écosystème 🌿 rassemble des êtres vivants et leur environnement, avec des échanges de matière et d'énergie. Une forêt, un lac ou un récif corallien sont des exemples 🐠" },
+    { question: "qu'est-ce qu'une cellule", reponse: "La cellule 🔬 est l'unité de base du vivant. Elle possède une membrane, du matériel génétique et des structures spécialisées. Les cellules peuvent être animales, végétales ou microbiennes 🧬" },
+    { question: "qu'est-ce qu'une bactérie", reponse: "Une bactérie 🦠 est un micro-organisme formé d'une seule cellule, sans noyau délimité. Beaucoup sont utiles, tandis que certaines peuvent provoquer des maladies. Les antibiotiques ciblent certaines bactéries 💊" },
+    { question: "qu'est-ce qu'un vaccin", reponse: "Un vaccin 💉 entraîne le système immunitaire à reconnaître un agent infectieux ou une partie de celui-ci, afin de mieux se défendre lors d'une exposition future 🛡️" },
+    { question: "qu'est-ce que le système immunitaire", reponse: "Le système immunitaire 🛡️ est l'ensemble des cellules, tissus et organes qui protègent l'organisme contre les agents étrangers et certaines cellules anormales. Il possède une mémoire immunitaire 🧠" },
+    { question: "qu'est-ce qu'une protéine", reponse: "Une protéine 🧬 est une molécule constituée d'une chaîne d'acides aminés. Elle peut former des structures, transporter des substances ou accélérer des réactions chimiques ⚙️" },
+    { question: "qu'est-ce qu'une enzyme", reponse: "Une enzyme ⚗️ est une protéine, ou parfois une autre molécule biologique, qui accélère une réaction chimique sans être consommée. Elle agit souvent avec une grande spécificité 🎯" },
+    { question: "qu'est-ce que la respiration", reponse: "La respiration cellulaire 🔋 est un ensemble de réactions qui permet aux cellules de produire de l'énergie utilisable à partir de nutriments, souvent avec l'aide de l'oxygène et en libérant du CO₂" },
+    { question: "qu'est-ce que la photosynthèse", reponse: "La photosynthèse 🌱 transforme l'énergie lumineuse en énergie chimique. Les plantes utilisent principalement l'eau 💧 et le dioxyde de carbone pour fabriquer des sucres et libérer de l'oxygène ☀️" },
+    { question: "qu'est-ce qu'une fraction", reponse: "Une fraction 🔢 représente une division entre un numérateur et un dénominateur. Dans 3/4, 3 est le numérateur et 4 le dénominateur. Elle vaut 0,75 en écriture décimale 📊" },
+    { question: "comment calculer un pourcentage", reponse: "Pour calculer p % d'une quantité, multiplie cette quantité par p puis divise par 100. Exemple : 20 % de 50 = 50 × 20 / 100 = 10 ✅" },
+    { question: "qu'est-ce qu'un angle", reponse: "Un angle 📐 est formé par deux demi-droites ayant la même origine. Il se mesure en degrés ou en radians. Un angle droit vaut 90° et un angle plat 180°" },
+    { question: "qu'est-ce qu'un cercle", reponse: "Un cercle ⭕ est l'ensemble des points situés à la même distance d'un centre. Cette distance est le rayon. Sa circonférence vaut 2πr et son aire πr² 📏" },
+    { question: "qu'est-ce qu'un polygone", reponse: "Un polygone 🔺 est une figure plane fermée composée de segments. Un triangle a 3 côtés, un quadrilatère 4 et un pentagone 5 côtés 📐" },
+    { question: "qu'est-ce qu'une moyenne", reponse: "La moyenne arithmétique 📊 s'obtient en additionnant les valeurs puis en divisant par leur nombre. Pour 2, 4 et 6 : (2 + 4 + 6) / 3 = 4 ✅" },
+    { question: "qu'est-ce qu'une variable", reponse: "Une variable 💻 est un nom associé à une valeur qui peut changer pendant l'exécution d'un programme. Exemple en JavaScript : let score = 0; puis score = score + 1" },
+    { question: "qu'est-ce qu'une boucle", reponse: "Une boucle 🔁 répète des instructions tant qu'une condition est vraie ou pour chaque élément d'une collection. Les formes courantes sont for et while 🧩" },
+    { question: "qu'est-ce qu'une condition", reponse: "Une condition ⚙️ permet à un programme de choisir un comportement selon qu'une expression est vraie ou fausse. En JavaScript, on utilise souvent if, else et else if" },
+    { question: "qu'est-ce qu'une fonction en programmation", reponse: "Une fonction 💻 est un bloc réutilisable qui reçoit éventuellement des paramètres et renvoie un résultat. Elle rend le code plus clair, testable et facile à maintenir 🛠️" },
+    { question: "qu'est-ce que json", reponse: "JSON 📦 est un format texte léger utilisé pour représenter des données structurées. Il repose sur des objets, des tableaux, des chaînes, des nombres, true, false et null 🌐" },
+    { question: "qu'est-ce que le navigateur", reponse: "Un navigateur 🌐 est un logiciel qui affiche des pages web et exécute du JavaScript. Chrome, Firefox, Edge et Safari en sont des exemples 💻" },
+    { question: "qu'est-ce qu'une url", reponse: "Une URL 🔗 est l'adresse d'une ressource sur internet. Elle peut indiquer un protocole comme https, un domaine, un chemin et parfois des paramètres 📍" },
+    { question: "qu'est-ce que le https", reponse: "HTTPS 🔒 est la version sécurisée de HTTP. Il chiffre les échanges entre le navigateur et le serveur grâce à TLS, ce qui protège notamment les mots de passe et les données sensibles 🛡️" },
+    { question: "qu'est-ce qu'un mot de passe sécurisé", reponse: "Un mot de passe sécurisé 🔐 est long, unique et difficile à deviner. Utilise un gestionnaire de mots de passe et active l'authentification multifacteur lorsque c'est possible ✅" },
+    { question: "qu'est-ce que l'accessibilité web", reponse: "L'accessibilité web ♿ consiste à concevoir des sites utilisables par le plus grand nombre, notamment avec une navigation au clavier, des contrastes adaptés, des textes alternatifs et une structure sémantique 🌐" },
+    { question: "comment apprendre une langue", reponse: "Pour apprendre une langue 🗣️, pratique un peu chaque jour, écoute des contenus authentiques, mémorise des phrases utiles et accepte de faire des erreurs. La régularité compte plus que les longues séances 📚" },
+    { question: "comment mieux mémoriser", reponse: "Pour mémoriser 🧠, utilise la répétition espacée, récupère activement l'information sans regarder la réponse et relie les nouvelles notions à des exemples concrets 🔗" },
+    { question: "comment organiser son temps", reponse: "Pour organiser ton temps ⏰, liste tes priorités, découpe les tâches en petites étapes, réserve des créneaux réalistes et garde une marge pour les imprévus 📋" },
+    { question: "comment rester concentré", reponse: "Pour rester concentré 🎯, éloigne les notifications, travaille par sessions courtes, définis une seule tâche et fais des pauses régulières. Un environnement simple aide beaucoup 🧘" },
+    { question: "qu'est-ce que la créativité", reponse: "La créativité 🎨 est la capacité à produire des idées nouvelles et pertinentes. Elle se développe en observant, expérimentant, combinant des concepts et en acceptant les brouillons 💡" },
+    { question: "donne-moi une idée de projet", reponse: "Crée une application de liste de tâches ✅ avec catégories, recherche, mode sombre et sauvegarde locale. Commence par une version simple, puis ajoute une fonctionnalité à la fois 🚀" },
+    { question: "donne-moi une devinette", reponse: "Je peux être cassé sans être touché. Qui suis-je ? 🤔 Réponse : une promesse ! ✨" },
+    { question: "raconte-moi une blague", reponse: "Pourquoi les développeurs préfèrent-ils le mode sombre ? Parce que la lumière attire les bugs 🐛😄" },
     { question: "qu'est-ce que la relativité", reponse: "La relativité d'Einstein 🧠✨ regroupe deux théories révolutionnaires : la relativité restreinte 🚀 (1905) qui unifie espace et temps ⏱️, et la relativité générale 🌌 (1915) qui décrit la gravité comme une courbure de l'espace-temps 🕸️. Résultats concrets : GPS 📡, dilatation du temps ⏳, lentilles gravitationnelles 🔭" },
     { question: "qu'est-ce que la mécanique quantique", reponse: "La mécanique quantique 🔬✨ décrit le comportement étrange des particules à l'échelle atomique ⚛️. Des concepts déroutants comme la superposition 🌀, l'intrication 🔗, le principe d'incertitude 🎲 y règnent. C'est la base du transistor 💻, du laser 🔴 et de l'IRM 🧲" },
     { question: "qu'est-ce que la photosynthèse", reponse: "La photosynthèse 🌿☀️ est le processus par lequel les plantes 🍀 transforment la lumière ✨, l'eau 💧 et le CO₂ 🌫️ en glucose 🍯 et oxygène 💨. C'est le poumon de la planète 🌍 : sans elle, pas de vie animale ! 🐒🐠🦅" },
@@ -3314,38 +3362,74 @@ const qaPairs = [
 // ========================
 // MARKOV CHAIN ENGINE
 // ========================
-function buildMarkovChain(corpus) {
+// Chaine de Markov d'ordre N : la cle est constituee des N derniers mots
+// (au lieu d'un seul), ce qui rend la reecriture plus fidele au style du
+// corpus. On indexe aussi les cles plus courtes (ordre 1 a N) pour permettre
+// un repli (backoff) quand le contexte complet de N mots est inedit.
+const MARKOV_ORDER_DEFAULT = 5;
+function buildMarkovChain(corpus, order) {
+    const ord = order || MARKOV_ORDER_DEFAULT;
     const chain = {};
+    function add(key, next) {
+        if (!chain[key]) chain[key] = [];
+        chain[key].push(next);
+    }
     corpus.forEach(entry => {
         if (!entry.reponse) return;
         const words = entry.reponse.split(/\s+/);
         for (let i = 0; i < words.length - 1; i++) {
-            const key = words[i].toLowerCase();
             const next = words[i + 1];
-            if (!chain[key]) chain[key] = [];
-            chain[key].push(next);
+            for (let n = 1; n <= ord; n++) {
+                if (i - n + 1 < 0) break;
+                const key = words.slice(i - n + 1, i + 1).map(w => w.toLowerCase()).join(' ');
+                add(key, next);
+            }
         }
     });
     return chain;
 }
 
+let markovChainOrder = MARKOV_ORDER_DEFAULT;
 let markovChain = {};
-try { markovChain = buildMarkovChain(qaPairs); } catch (e) { markovChain = {}; }
+try { markovChain = buildMarkovChain(qaPairs, markovChainOrder); } catch (e) { markovChain = {}; }
+function rebuildMarkovChain(order) {
+    markovChainOrder = order || MARKOV_ORDER_DEFAULT;
+    try { markovChain = buildMarkovChain(qaPairs, markovChainOrder); } catch (e) { markovChain = {}; }
+}
 
 // ========================
 // SIMILARITE JACCARD V2 — TF-IDF + char n-grams + bonus préfixe
 // ========================
 const STOPWORDS = new Set(['le','la','les','un','une','des','de','du','et','ou','a','au','aux','en','dans','sur','pour','par','avec','sans','ce','cet','cette','ces','mon','ma','mes','ton','ta','tes','son','sa','ses','je','tu','il','elle','on','nous','vous','ils','elles','me','te','se','y','est','sont','ai','as','avons','avez','ont','ete','etre','avoir','que','qui','quoi','ne','pas','plus','moins','tres','si','oui','non','moi','toi','lui','eux','leur','leurs','c','d','l','m','n','s','t','qu']);
 function normalizeTxt(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(); }
-function tokenize(s){ return normalizeTxt(s).split(/\s+/).filter(w => w.length > 1 && !STOPWORDS.has(w)); }
+
+// --- Cache mémo : les mêmes textes (questions du corpus, historique) sont
+// retokenisés à chaque frappe/message. On mémorise le résultat pour éviter
+// de refaire tout le travail de normalisation/segmentation à chaque appel.
+// Le cache est borné pour ne jamais grossir indéfiniment.
+const _MEMO_MAX = 4000;
+function _memoGet(map, key, compute){
+    if (map.has(key)) return map.get(key);
+    const val = compute();
+    if (map.size >= _MEMO_MAX) map.clear();
+    map.set(key, val);
+    return val;
+}
+const _tokenizeCache = new Map();
+function tokenize(s){
+    return _memoGet(_tokenizeCache, s, () => normalizeTxt(s).split(/\s+/).filter(w => w.length > 1 && !STOPWORDS.has(w)));
+}
 function bigrams(tokens){ const bg=[]; for(let i=0;i<tokens.length-1;i++) bg.push(tokens[i]+'__'+tokens[i+1]); return bg; }
 
 // Char n-grams (trigrammes de caractères) pour capturer les fautes de frappe
+const _charNgramsCache = new Map();
 function charNgrams(str, n=3){
-    const s = normalizeTxt(str).replace(/\s/g,'_');
-    const ng = new Set();
-    for(let i=0;i<=s.length-n;i++) ng.add(s.slice(i,i+n));
-    return ng;
+    return _memoGet(_charNgramsCache, n + '|' + str, () => {
+        const s = normalizeTxt(str).replace(/\s/g,'_');
+        const ng = new Set();
+        for(let i=0;i<=s.length-n;i++) ng.add(s.slice(i,i+n));
+        return ng;
+    });
 }
 
 // IDF pré-calculé sur le corpus (log inverse document frequency)
@@ -3387,6 +3471,14 @@ function jaccardSet(sA, sB){
     return inter / (sA.size + sB.size - inter);
 }
 
+// Regroupe tokens + set de bigrammes pour un texte donné, en cache : évite de
+// reconstruire ces structures à chaque comparaison (le même texte de corpus
+// est comparé à des centaines de questions au fil d'une session).
+const _bigramSetCache = new Map();
+function bigramSetFor(text, tokens){
+    return _memoGet(_bigramSetCache, text, () => new Set(bigrams(tokens)));
+}
+
 function jaccardSimilarity(a, b) {
     const tA = tokenize(a), tB = tokenize(b);
 
@@ -3394,7 +3486,7 @@ function jaccardSimilarity(a, b) {
     const wordScore = jaccardTFIDF(tA, tB);
 
     // Score bigrammes de mots
-    const bgScore = jaccardSet(new Set(bigrams(tA)), new Set(bigrams(tB)));
+    const bgScore = jaccardSet(bigramSetFor(a, tA), bigramSetFor(b, tB));
 
     // Score trigrammes de caractères (tolérance typos)
     const cgA = charNgrams(a), cgB = charNgrams(b);
@@ -3489,7 +3581,7 @@ function applyGuardrails(text, question) {
 }
 
 
-const rawCorpusText = `La Terre tourne autour du Soleil en environ 365,25 jours, ce qui explique l'existence des annees bissextiles tous les quatre ans. La Lune, elle, met environ 27,3 jours pour faire le tour de notre planete.
+const curatedCorpusText = `La Terre tourne autour du Soleil en environ 365,25 jours, ce qui explique l'existence des annees bissextiles tous les quatre ans. La Lune, elle, met environ 27,3 jours pour faire le tour de notre planete.
 L'eau bout a 100 degres Celsius au niveau de la mer, mais la temperature d'ebullition baisse avec l'altitude car la pression atmospherique diminue. En altitude, les pates cuisent donc plus lentement.
 Le coeur humain bat environ 100 000 fois par jour et pompe a peu pres 7 000 litres de sang. Le corps contient environ 5 a 6 litres de sang en circulation permanente.
 Python est un langage de programmation cree par Guido van Rossum en 1991. Il est reconnu pour sa lisibilite, son indentation significative et son immense ecosysteme de bibliotheques scientifiques.
@@ -3560,13 +3652,88 @@ La tectonique des plaques explique la derive des continents, les seismes, la for
 Un arc-en-ciel apparait lorsque la lumiere du Soleil est refractee, reflechie puis a nouveau refractee dans des gouttes de pluie.
 `;
 
+// ========================
+// CORPUS ETENDU (generation combinatoire)
+// ========================
+// Le corpus "brut" ci-dessus (curatedCorpusText) est volontairement court et
+// ecrit a la main. Pour donner au moteur davantage de matiere a chercher,
+// on le complete avec un corpus genere par combinaison de themes / sujets /
+// phrases-modeles, jusqu'a atteindre la taille cible (par defaut ~1 Mo,
+// reglable via le parametre "Taille cible du corpus").
+const CORPUS_DOMAINS = [
+    { nom: 'astronomie', sujets: ['le Soleil','la Lune','Mars','Jupiter','Saturne','Venus','Mercure','Neptune','Uranus','une comete','une etoile filante','une nebuleuse','un trou noir','une galaxie spirale','la Voie lactee','un asteroide','une supernova','un satellite naturel','une eclipse solaire','une eclipse lunaire','un telescope spatial','une constellation','un pulsar','une naine blanche','un quasar','l\'orbite terrestre','la ceinture de Kuiper','la ceinture d\'asteroides','un exoplanete','le vent solaire'] },
+    { nom: 'biologie', sujets: ['la cellule','l\'ADN','une proteine','le systeme immunitaire','la photosynthese','un ecosysteme','une mitochondrie','le cerveau humain','le systeme nerveux','une enzyme','la respiration cellulaire','un chromosome','une bacterie','un virus','un champignon','une plante a fleurs','un insecte pollinisateur','un mammifere marin','un reptile','un amphibien','la chaine alimentaire','la biodiversite','un recif corallien','une foret tropicale','un ecosysteme marin','la selection naturelle','une espece endemique','le cycle de l\'eau','la chlorophylle','un organe vital'] },
+    { nom: 'histoire', sujets: ['la Revolution francaise','l\'Empire romain','la Renaissance','la premiere guerre mondiale','la seconde guerre mondiale','l\'Egypte antique','la civilisation grecque','le Moyen Age','la decouverte de l\'Amerique','la revolution industrielle','la guerre froide','l\'Empire byzantin','la civilisation maya','la dynastie des Han','la route de la soie','les grandes decouvertes','la chute de l\'Empire romain','la construction des pyramides','l\'invention de l\'imprimerie','la conquete spatiale','la revolution numerique','l\'abolition de l\'esclavage','la declaration des droits de l\'homme','le siecle des Lumieres','l\'unification allemande','la periode Edo au Japon','l\'empire ottoman','la guerre de Cent Ans','la revolution russe','l\'independance des colonies'] },
+    { nom: 'geographie', sujets: ['le fleuve Amazone','le Sahara','l\'Himalaya','l\'ocean Pacifique','le Nil','les chutes du Niagara','la foret amazonienne','le Groenland','le desert de Gobi','les Alpes','la Grande Barriere de corail','le lac Baikal','la peninsule scandinave','l\'archipel du Japon','le plateau tibetain','la vallee du Rift','les Andes','la mer Mediterranee','l\'Antarctique','le detroit de Gibraltar','le canal de Panama','la baie d\'Halong','les chutes Victoria','le mont Everest','le fleuve Mississippi','l\'ile de Madagascar','le delta du Mekong','la cordillere des Andes','le bassin du Congo','les iles Galapagos'] },
+    { nom: 'technologie', sujets: ['un ordinateur quantique','un reseau neuronal','l\'intelligence artificielle','un smartphone','un satellite de communication','une imprimante 3D','un panneau solaire','une batterie lithium-ion','un moteur electrique','un robot industriel','la realite virtuelle','la 5G','un capteur photographique','un microprocesseur','le cloud computing','la blockchain','un drone','un vehicule autonome','un algorithme de tri','un systeme d\'exploitation','une base de donnees','un langage de programmation','un reseau de fibre optique','un ecran OLED','un casque de realite augmentee','un serveur informatique','la cryptographie','un capteur biometrique','une carte graphique','l\'internet des objets'] },
+    { nom: 'cuisine', sujets: ['la baguette', 'le fromage', 'la fermentation', 'la sauce bechamel', 'le riz', 'les epices', 'la cuisine japonaise', 'la cuisine italienne', 'le chocolat', 'le cafe', 'le vin', 'la patisserie', 'le pain au levain', 'la cuisson sous vide', 'un bouillon', 'une reduction', 'la caramelisation', 'la cuisine fermentee coreenne', 'le curry indien', 'la paella espagnole', 'le sushi', 'la choucroute', 'la ratatouille', 'le miel', 'l\'huile d\'olive', 'le vinaigre balsamique', 'la truffe', 'le safran', 'la vanille', 'le sucre de canne'] },
+    { nom: 'sport', sujets: ['le football', 'le tennis', 'les jeux olympiques', 'le marathon', 'la natation', 'le cyclisme', 'le judo', 'l\'escalade', 'le ski alpin', 'le rugby', 'le basketball', 'l\'athletisme', 'la voile', 'le patinage artistique', 'l\'escrime', 'le volleyball', 'la boxe', 'le triathlon', 'la gymnastique', 'le surf', 'le handball', 'le golf', 'l\'aviron', 'le badminton', 'la course d\'endurance', 'le ski de fond', 'l\'equitation', 'le tir a l\'arc', 'la lutte', 'le hockey sur glace'] },
+    { nom: 'musique', sujets: ['la musique classique', 'le jazz', 'le piano', 'la guitare', 'un orchestre symphonique', 'la musique electronique', 'le rock', 'l\'opera', 'un compositeur', 'une gamme musicale', 'le tempo', 'l\'harmonie', 'la musique baroque', 'un instrument a cordes', 'un instrument a vent', 'la polyphonie', 'le blues', 'la musique traditionnelle', 'un concerto', 'une symphonie', 'la notation musicale', 'le rythme', 'la musique du monde', 'un choeur', 'la composition musicale', 'l\'improvisation jazz', 'la musique de film', 'un synthetiseur', 'la voix humaine', 'un festival de musique'] },
+    { nom: 'litterature', sujets: ['le roman', 'la poesie', 'le theatre', 'la litterature classique', 'un recit de voyage', 'la science-fiction', 'le roman policier', 'la fable', 'le conte', 'la nouvelle', 'la litterature romantique', 'le roman epistolaire', 'la tragedie grecque', 'la comedie', 'la litterature de jeunesse', 'l\'autobiographie', 'le realisme litteraire', 'le surrealisme', 'la litterature engagee', 'la poesie moderne', 'la litterature medievale', 'le roman d\'aventure', 'la satire', 'l\'essai philosophique', 'la litterature orale', 'le mythe fondateur', 'la litterature africaine', 'la litterature latino-americaine', 'le haiku', 'la litterature dystopique'] },
+    { nom: 'economie', sujets: ['l\'inflation', 'le marche boursier', 'une entreprise', 'le commerce international', 'la monnaie', 'l\'offre et la demande', 'un investissement', 'le produit interieur brut', 'une banque centrale', 'le taux d\'interet', 'la mondialisation', 'une start-up', 'le chomage', 'la fiscalite', 'le pouvoir d\'achat', 'la balance commerciale', 'un marche financier', 'la croissance economique', 'une devise', 'le libre-echange', 'une politique monetaire', 'la consommation', 'un modele economique', 'l\'economie circulaire', 'une chaine d\'approvisionnement', 'un cycle economique', 'la concurrence', 'un monopole', 'la dette publique', 'le capital-risque'] },
+    { nom: 'chimie', sujets: ['l\'atome', 'une molecule', 'un element chimique', 'une reaction chimique', 'le tableau periodique', 'un acide', 'une base chimique', 'un catalyseur', 'un polymere', 'la table des isotopes', 'une liaison covalente', 'un metal', 'un gaz noble', 'un compose organique', 'la combustion', 'l\'oxydation', 'un electron', 'un proton', 'un neutron', 'une solution chimique', 'un cristal', 'un alliage', 'la chimie organique', 'un solvant', 'un pH', 'une enzyme catalytique', 'la synthese chimique', 'un isotope radioactif', 'la chimie industrielle', 'un compose aromatique'] },
+    { nom: 'physique', sujets: ['la gravite', 'la relativite', 'un electron', 'la mecanique quantique', 'une onde electromagnetique', 'la thermodynamique', 'l\'energie cinetique', 'un champ magnetique', 'la lumiere', 'le son', 'la pression atmospherique', 'un circuit electrique', 'la force nucleaire', 'l\'entropie', 'un photon', 'la vitesse de la lumiere', 'un supraconducteur', 'la mecanique des fluides', 'un laser', 'la radioactivite', 'un accelerateur de particules', 'la theorie des cordes', 'un champ gravitationnel', 'l\'effet doppler', 'la conservation de l\'energie', 'un semi-conducteur', 'l\'electromagnetisme', 'la friction', 'un plasma', 'la diffraction'] },
+    { nom: 'informatique', sujets: ['un algorithme', 'une structure de donnees', 'un reseau informatique', 'la securite informatique', 'un systeme d\'exploitation', 'une base de donnees', 'un langage de programmation', 'l\'apprentissage automatique', 'un compilateur', 'un serveur web', 'la programmation orientee objet', 'un pare-feu', 'un protocole reseau', 'le chiffrement', 'une interface graphique', 'un systeme distribue', 'un conteneur logiciel', 'une API', 'un framework web', 'la complexite algorithmique', 'un systeme embarque', 'la virtualisation', 'un pilote materiel', 'une architecture logicielle', 'un test unitaire', 'un debogueur', 'un gestionnaire de versions', 'une interface de programmation', 'un cache memoire', 'un systeme de fichiers'] },
+    { nom: 'art', sujets: ['la peinture a l\'huile', 'la sculpture', 'l\'architecture gothique', 'l\'art abstrait', 'l\'impressionnisme', 'le cubisme', 'la photographie', 'l\'art numerique', 'la fresque', 'la gravure', 'l\'art baroque', 'la ceramique', 'le vitrail', 'l\'art contemporain', 'la mosaique', 'l\'art de la Renaissance', 'le street art', 'la calligraphie', 'l\'origami', 'la tapisserie', 'l\'art cinetique', 'le design industriel', 'l\'architecture moderne', 'la perspective picturale', 'le portrait', 'la nature morte', 'l\'art surrealiste', 'l\'installation artistique', 'la performance artistique', 'l\'art de rue'] },
+    { nom: 'medecine', sujets: ['le systeme cardiovasculaire', 'un vaccin', 'un antibiotique', 'la chirurgie', 'le systeme respiratoire', 'une cellule souche', 'un anticorps', 'la genetique medicale', 'un diagnostic clinique', 'la radiologie', 'un traitement therapeutique', 'le systeme digestif', 'une greffe d\'organe', 'la pharmacologie', 'un essai clinique', 'la kinesitherapie', 'la sante mentale', 'un neurotransmetteur', 'la medecine preventive', 'un implant medical', 'la nutrition clinique', 'un examen medical', 'la biologie moleculaire', 'un dispositif medical', 'la telemedecine', 'l\'imagerie medicale', 'la pediatrie', 'la gerontologie', 'l\'epidemiologie', 'la reeducation fonctionnelle'] }
+];
+const CORPUS_TEMPLATES = [
+    (s,d) => `${s[0].toUpperCase()}${s.slice(1)} occupe une place importante dans le domaine de la ${d}, ou son histoire, ses principes fondamentaux et ses applications pratiques font l'objet de nombreuses etudes depuis plusieurs annees.`,
+    (s,d) => `Les specialistes de la ${d} s'interessent particulierement a ${s}, car ses proprietes, son fonctionnement et son influence sur les systemes voisins continuent d'etre analyses en detail dans de nombreux travaux.`,
+    (s,d) => `Comprendre ${s} demande souvent des connaissances approfondies en ${d}, une discipline riche et en constante evolution qui relie des observations concretes a des modeles explicatifs de plus en plus precis.`,
+    (s,d) => `Dans les manuels de ${d}, ${s} est presente comme un exemple classique permettant d'illustrer plusieurs principes fondamentaux, leurs limites et les consequences qu'ils peuvent avoir dans la pratique.`,
+    (s,d) => `${s[0].toUpperCase()}${s.slice(1)} illustre bien la complexite de la ${d}, un domaine ou chaque decouverte apporte de nouvelles informations, mais ouvre aussi des questions supplementaires a explorer.`,
+    (s,d) => `De nombreux chercheurs en ${d} consacrent leur carriere a l'etude de ${s}, esperant en percer les derniers mysteres et mieux comprendre les mecanismes qui expliquent son comportement dans differents contextes.`,
+    (s,d) => `On enseigne generalement ${s} des les premieres annees d'etude de la ${d}, tant ce sujet est considere comme fondamental pour construire une comprehension solide et progresser vers des notions plus complexes.`,
+    (s,d) => `${s[0].toUpperCase()}${s.slice(1)} a beaucoup evolue au fil du temps, et la ${d} moderne en propose une vision renouvelee grace aux observations, aux outils de mesure et aux methodes de recherche contemporaines.`,
+    (s,d) => `Les passionnes de ${d} citent souvent ${s} comme un exemple marquant qui a change leur maniere de voir la discipline, en montrant comment une idee peut produire des effets durables dans la societe.`,
+    (s,d) => `Il existe plusieurs approches pour etudier ${s} en ${d}, chacune apportant un eclairage different sur le sujet et permettant de comparer les resultats obtenus selon les hypotheses et les conditions retenues.`,
+    (s,d) => `${s[0].toUpperCase()}${s.slice(1)} reste un sujet de debat parmi les experts de la ${d}, certains points faisant encore l'objet de controverses et necessitant des recherches complementaires avant de parvenir a un consensus.`,
+    (s,d) => `Les etudiants en ${d} decouvrent generalement ${s} au cours de leurs premieres annees, avant d'en approfondir les aspects les plus techniques, historiques et experimentaux dans des etudes specialisees.`,
+    (s,d) => `Il est difficile de resumer en quelques mots l'importance de ${s} pour la ${d}, tant ses implications sont nombreuses et concernent a la fois la theorie, les applications et les questions de societe.`,
+    (s,d) => `Plusieurs ouvrages de reference consacres a la ${d} reviennent longuement sur ${s}, considere comme un cas d'ecole qui permet de relier des notions generales a des exemples facilement observables.`,
+    (s,d) => `${s[0].toUpperCase()}${s.slice(1)} continue de susciter la curiosite du grand public, meme en dehors des cercles specialises en ${d}, car ses effets peuvent etre observes dans la vie quotidienne et dans les innovations recentes.`,
+    (s,d) => `En ${d}, l'etude de ${s} a permis de mieux comprendre des mecanismes plus generaux, applicables a d'autres domaines connexes et utiles pour interpreter de nouvelles observations ou concevoir de meilleures solutions.`,
+    (s,d) => `Certains manuels scolaires presentent ${s} comme une porte d'entree ideale vers la ${d} pour les debutants, en proposant des explications progressives, des exemples concrets et des exercices permettant de verifier les notions acquises.`
+];
+function buildExtendedCorpus(targetChars){
+    const target = targetChars || 1000000;
+    let parts = [];
+    let total = 0;
+    outer:
+    for (let t = 0; t < CORPUS_TEMPLATES.length; t++) {
+        for (let d = 0; d < CORPUS_DOMAINS.length; d++) {
+            const dom = CORPUS_DOMAINS[d];
+            for (let s = 0; s < dom.sujets.length; s++) {
+                const line = CORPUS_TEMPLATES[t](dom.sujets[s], dom.nom);
+                parts.push(line);
+                total += line.length + 1;
+                if (total >= target) break outer;
+            }
+        }
+    }
+    return parts.join('\n');
+}
+
+let __extendedCorpusCache = null;
+function getRawCorpusText(){
+    const targetKB = (data.settings && data.settings.corpusTargetKB) || 1024;
+    const targetChars = targetKB * 1024;
+    if (__extendedCorpusCache && __extendedCorpusCache.targetChars === targetChars) {
+        return __extendedCorpusCache.text;
+    }
+    const text = curatedCorpusText + '\n' + buildExtendedCorpus(Math.max(0, targetChars - curatedCorpusText.length));
+    __extendedCorpusCache = { targetChars, text };
+    return text;
+}
+
 let __rawChunks = null;
 function getRawChunks(){
     if (__rawChunks) return __rawChunks;
     const minLen = (data.settings && data.settings.rawMinLen) || 40;
     const maxLen = (data.settings && data.settings.rawMaxLen) || 400;
     let parts = [];
-    rawCorpusText.split(/\n+/).forEach(function(line){
+    getRawCorpusText().split(/\n+/).forEach(function(line){
         line = line.trim();
         if (!line) return;
         if (line.length <= maxLen) { parts.push(line); return; }
@@ -3599,6 +3766,46 @@ function searchRawCorpus(question){
 function generateResponse(question) {
     // coucouation directe : reponse dediee, jamais de date/heure
     const qn = (question || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+
+    // Réponses déterministes pour les demandes simples : elles doivent
+    // toujours passer avant la sélection probabiliste du corpus.
+    const exactMatch = qaPairs.find(pair => {
+        const pn = normalizeTxt(pair.question);
+        return pn && pn === normalizeTxt(question);
+    });
+    if (exactMatch && exactMatch.reponse) {
+        let exactResponse = applyGuardrails(exactMatch.reponse, question);
+        if (data.settings.showScore) exactResponse += '\n\n_(correspondance : 100.0%)_';
+        return exactResponse;
+    }
+
+    // Calculatrice locale sans eval : uniquement des expressions numériques
+    // simples, afin d'éviter toute exécution de code fourni par l'utilisateur.
+    const mathText = qn.replace(/^(combien font|calcule|calcul[e]?|résous|resous)\s+/i, '')
+        .replace(/,/g, '.').replace(/[×x]/g, '*').replace(/÷/g, '/');
+    if (/^[0-9.\s+*/%()\-]+$/.test(mathText) && /[+*/%\-]/.test(mathText)) {
+        try {
+            const tokens = mathText.match(/\d+(?:\.\d+)?|[+*/%()\-]/g) || [];
+            if (tokens.join('') === mathText.replace(/\s/g, '') && tokens.length <= 31) {
+                const values = tokens.filter(t => /^\d/.test(t)).map(Number);
+                const operators = tokens.filter(t => !/^\d/.test(t));
+                if (values.length === operators.length + 1 && !operators.includes('(') && !operators.includes(')')) {
+                    let result = values[0];
+                    for (let i = 0; i < operators.length; i++) {
+                        const value = values[i + 1];
+                        if (operators[i] === '+') result += value;
+                        else if (operators[i] === '-') result -= value;
+                        else if (operators[i] === '*') result *= value;
+                        else if (operators[i] === '/' && value !== 0) result /= value;
+                        else if (operators[i] === '%' && value !== 0) result %= value;
+                        else throw new Error('operation invalide');
+                    }
+                    if (Number.isFinite(result)) return `Résultat : ${Number(result.toFixed(10))}`;
+                }
+            }
+        } catch (e) {}
+    }
+
     const greetRe = /^(bonjour|bonsoir|coucou|coucou|hello|hi|hey|yo|hola|allo|allo\?|bonne\s+journee|bonne\s+soiree|re|rebonjour)[\s!?.,]*$/;
     if (greetRe.test(qn)) {
         const greetings = [
@@ -3634,13 +3841,20 @@ function generateResponse(question) {
     if (bestMatch && bestScore > 0) {
         // Reecriture Markov de la reponse trouvee
         const creativity = data.settings.markovCreativity / 100;
+        const order = data.settings.markovDepth || markovChainOrder || MARKOV_ORDER_DEFAULT;
         const words = bestMatch.reponse.split(/\s+/);
         let result = [];
         for (let i = 0; i < words.length; i++) {
             if (i > 0 && Math.random() < creativity) {
-                const prev = words[i - 1].toLowerCase();
-                const candidates = markovChain[prev];
-                if (candidates && candidates.length > 0) {
+                // Repli (backoff) : on essaie d'abord le contexte le plus long
+                // (jusqu'a `order` mots precedents), puis on raccourcit si aucune
+                // suite n'est connue pour ce contexte.
+                let candidates = null;
+                for (let n = Math.min(order, i); n >= 1; n--) {
+                    const ctx = words.slice(i - n, i).map(w => w.toLowerCase()).join(' ');
+                    if (markovChain[ctx] && markovChain[ctx].length > 0) { candidates = markovChain[ctx]; break; }
+                }
+                if (candidates) {
                     result.push(candidates[Math.floor(Math.random() * candidates.length)]);
                     continue;
                 }
@@ -4073,10 +4287,17 @@ function colorName(r,g,b){
     let fullGhost = '';
     let debounce  = null;
 
+    // Le corpus (questions + historique utilisateur) ne change qu'à l'envoi
+    // d'un message, au chargement ou à l'import de données : on le met en
+    // cache au lieu de le reconstruire à chaque frappe.
+    let _corpusCache = null;
+    window.__pyInvalidateGhostCorpus = function(){ _corpusCache = null; };
+
     function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
     function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     function getCorpus() {
+        if (_corpusCache) return _corpusCache;
         const seen = new Set(), out = [];
         if (typeof qaPairs !== 'undefined') {
             qaPairs.forEach(p => {
@@ -4092,6 +4313,7 @@ function colorName(r,g,b){
                 });
             });
         }
+        _corpusCache = out;
         return out;
     }
 
@@ -4136,6 +4358,7 @@ function colorName(r,g,b){
     }
 
     function update() {
+        if (typeof data !== 'undefined' && data.settings && data.settings.ghost === false) { hide(); return; }
         const val = input.value;
         if (!val) { hide(); return; }
         // Conserver le ghost en cours si le texte tapé en est toujours un préfixe
@@ -4178,7 +4401,8 @@ function colorName(r,g,b){
 
     input.addEventListener('input', () => {
         clearTimeout(debounce);
-        debounce = setTimeout(update, 60);
+        const delay = (typeof data !== 'undefined' && data.settings && data.settings.ghostDelay) || 60;
+        debounce = setTimeout(update, delay);
     });
 
     input.addEventListener('keydown', e => {
@@ -4205,10 +4429,27 @@ function colorName(r,g,b){
 // ========================
 // UI : CONVERSATIONS
 // ========================
+let _convSearchTerm = '';
 function renderConvList() {
     const list = document.getElementById('convList');
     list.innerHTML = '';
-    data.convs.forEach(conv => {
+    const term = normalizeTxt(_convSearchTerm);
+    let shown = data.convs;
+    if (term) {
+        shown = data.convs.filter(conv => {
+            if (normalizeTxt(conv.name || '').includes(term)) return true;
+            return (conv.items || []).some(item => normalizeTxt(item.text || '').includes(term));
+        });
+    }
+    if (term && shown.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'convEmpty';
+        empty.style.cssText = 'padding:10px;color:var(--text-secondary);font-size:13px;';
+        empty.textContent = 'Aucune discussion trouvee.';
+        list.appendChild(empty);
+        return;
+    }
+    shown.forEach(conv => {
         const el = document.createElement('div');
         el.className = 'convItem' + (conv.id === currentConvId ? ' active' : '');
         el.textContent = conv.name || 'Discussion';
@@ -4466,6 +4707,7 @@ async function fsReadFile(apply){
             if (Array.isArray(parsed.convs)) data.convs = parsed.convs;
             if (parsed.settings) Object.assign(data.settings, parsed.settings);
             try { localStorage.setItem('pychat_data', JSON.stringify(data)); } catch(e){}
+            if (window.__pyInvalidateGhostCorpus) window.__pyInvalidateGhostCorpus();
             try { renderConvList(); renderChat(); } catch(e){}
             try { if (window.__pyApplyUi) window.__pyApplyUi(); } catch(e){}
         }
@@ -4490,6 +4732,7 @@ async function fsInit(){
 // SAVE / LOAD
 // ========================
 function saveData() {
+    if (window.__pyInvalidateGhostCorpus) window.__pyInvalidateGhostCorpus();
     if (!data.settings.autoSave) return;
     try {
         // Limiter l'historique
@@ -4516,6 +4759,9 @@ function loadData() {
             }
         }
     } catch (e) { console.warn('Load failed', e); }
+    // Reconstruit la chaine de Markov avec l'ordre effectif issu des reglages
+    // (au cas ou une valeur differente du defaut aurait ete sauvegardee).
+    try { if (typeof rebuildMarkovChain === 'function') rebuildMarkovChain(data.settings.markovDepth); } catch (e) {}
 }
 
 // ========================
@@ -4779,6 +5025,15 @@ function init() {
         renderChat();
         renderConvList();
     });
+    const _convSearchEl = document.getElementById('convSearch');
+    if (_convSearchEl) {
+        let _searchDebounce = null;
+        _convSearchEl.addEventListener('input', (e) => {
+            clearTimeout(_searchDebounce);
+            const val = e.target.value;
+            _searchDebounce = setTimeout(() => { _convSearchTerm = val; renderConvList(); }, 120);
+        });
+    }
     document.getElementById('btnSettingsToggle').addEventListener('click', () => {
         document.getElementById('settingsPanel').classList.toggle('active');
         playSound('open');
@@ -5027,6 +5282,7 @@ window.addEventListener('load', init);
     bindCheck('chkCapitalize', 'capitalize', true);
     bindCheck('chkNoRepeat', 'noRepeat', true);
     bindCheck('chkGhost', 'ghost', true);
+    bindRange('rangeGhostDelay', 'ghostDelay', 60, 'ms');
     bindCheck('chkArrowHistory', 'arrowHistory', true);
     bindCheck('chkTrim', 'trimInput', true);
     bindCheck('chkSpellcheck', 'spellcheck', false);
@@ -5037,6 +5293,13 @@ window.addEventListener('load', init);
     bindCheck('chkStrictCorpus', 'strictCorpus', false);
     bindCheck('chkRawCorpus', 'rawCorpus', true);
     bindRange('rangeRawThreshold', 'rawThreshold', 40, '%');
+    bindRange('rangeCorpusSize', 'corpusTargetKB', 1024, 'Ko');
+    (function(){
+        var el = $('rangeCorpusSize');
+        if (el) el.addEventListener('change', function(){
+            if (typeof invalidateRawChunks === 'function') invalidateRawChunks();
+        });
+    })();
     bindCheck('chkRawSource', 'rawSource', false);
     bindCheck('chkRawPriority', 'rawPriority', false);
     bindCheck('chkShowRawScore', 'showRawScore', false);
@@ -5046,7 +5309,13 @@ window.addEventListener('load', init);
     bindCheck('chkUnlockTheme', 'unlockTheme', false);
     bindCheck('chkEngineLogs', 'engineLogs', false);
     bindCheck('chkRawDebug', 'rawDebug', false);
-    bindRange('rangeMarkovDepth', 'markovDepth', 1, '');
+    bindRange('rangeMarkovDepth', 'markovDepth', 5, '');
+    (function(){
+        var el = $('rangeMarkovDepth');
+        if (el) el.addEventListener('change', function(){
+            if (typeof rebuildMarkovChain === 'function') rebuildMarkovChain(parseInt(el.value, 10));
+        });
+    })();
     bindCheck('chkRawStats', 'rawStats', false, function(v){ if (v && typeof getRawChunks === 'function') devLog('corpus brut : ' + getRawChunks().length + ' extraits'); });
     ['rangeRawMinLen','rangeRawMaxLen'].forEach(function(id){ var el = $(id); if (el) el.addEventListener('change', function(){ if (typeof invalidateRawChunks === 'function') invalidateRawChunks(); }); });
 
