@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>PYchat 3.5</title>
+<title>PYchat 3.6</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root{
@@ -420,6 +420,25 @@ body.menu-open .menu,.overlay.on,#pal.on{animation:none}
 .toast,.toast.ok,.toast.err{background:var(--fg);color:var(--bg);border-radius:8px}
 #toBottom{box-shadow:none}
 .mdq{border-left-width:2px;border-left-color:var(--line);border-radius:0 8px 8px 0}
+
+/* Interface sobre, fond blanc par defaut */
+:root{--bg:#fff;--panel:#fff;--panel-2:#f5f5f5;--line:#e5e5e5;--fg:#18181b;--muted:#71717a;--radius:8px}
+body,body.dark{background:#fff;color:#18181b}
+.sidebar,.header,.box,.menu,.card,.lcard,.hit{background:#fff}
+.msg.user .b{background:#f5f5f5;color:#18181b}
+.msg.ai .b{background:transparent;border:0;padding-left:0}
+.btn.primary{background:#18181b;border-color:#18181b;color:#fff;box-shadow:none}
+.sb-nav,.acct,.composer .hint,.modelbtn .sub{display:none}
+.voicebtn{border:0;background:none}
+#labPulse{display:none}
+.empty{min-height:62vh}
+.empty h1{font-size:30px;font-weight:600}
+.empty .greet-sub,.empty .uxcaps,.empty .chips,.empty .eyebrow,#homeChips{display:none}
+#tour,#uxTour{display:none!important}
+#aboutOverlay .inner{max-width:820px}
+#aboutOverlay .note{font-size:14px;line-height:1.65}
+#aboutOverlay .row b{font-weight:600}
+
 </style>
 </head>
 <body>
@@ -430,6 +449,7 @@ body.menu-open .menu,.overlay.on,#pal.on{animation:none}
   </div>
   <div class="sb-pad">
     <button class="newchat" id="newChat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nouvelle discussion</button>
+    <button class="newchat" id="aboutBtn" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>À propos</button>
     <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg><input id="search" placeholder="Rechercher"></div>
   </div>
   <div class="sb-nav">
@@ -4029,7 +4049,7 @@ var MODELS = [
 ];
 var model = MODELS[0];
 
-var DEF = { theme: 'auto', llm: false, llmUrl: 'http://localhost:11434', llmModel: 'llama3.2', collapse: false, anim: true, font: 15, width: 760, ghost: true, gdelay: 60,
+var DEF = { theme: 'light', llm: false, llmUrl: 'http://localhost:11434', llmModel: 'llama3.2', collapse: false, anim: true, font: 15, width: 760, ghost: true, gdelay: 60,
   thr: 15, len: 3, ord: 3, score: true, crea: 4, type: true,
   tts: true, rate: 100, vshort: true, enter: true, title: true, confirm: false, store: true };
 /* clé de stockage propre au compte connecté */
@@ -5820,7 +5840,7 @@ var NNCore = (function () {
     for (var t = 0; t < 6; t++) {
       var r = await fetch(url, { signal: signal });
       if (r.status === 429 || r.status >= 500) { await sleep(1500 * (t + 1)); continue; }
-      if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + (await r.text()).slice(0, 140));
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' - ' + (await r.text()).slice(0, 140));
       return r.json();
     }
     throw new Error('Le serveur Hugging Face est saturé, réessaie dans un instant.');
@@ -6035,7 +6055,7 @@ var NNCore = (function () {
     arr.forEach(function (c) {
       var g = groupOf(c.updated); if (g !== last) { var h = document.createElement('h4'); h.className = 'grp'; h.textContent = g; list.appendChild(h); last = g; }
       var d = document.createElement('div'); d.className = 'conv' + (active && c.id === active.id ? ' active' : '');
-      var s = document.createElement('span'); s.textContent = c.title; s.title = c.title + ' — ' + (c.messages || []).length + ' message(s) · double-clic pour renommer';
+      var s = document.createElement('span'); s.textContent = c.title; s.title = c.title + ' - ' + (c.messages || []).length + ' message(s) · double-clic pour renommer';
       s.onclick = function () { active = c; renderConvs(); renderThread(); if (window.PYLAB) PYLAB.close(); if (innerWidth <= 820) document.body.classList.add('collapsed'); };
       s.ondblclick = function (e) {
         e.stopPropagation(); var inp = document.createElement('input'); inp.className = 'ren'; inp.value = c.title; d.replaceChild(inp, s); inp.focus(); inp.select();
@@ -6070,7 +6090,7 @@ var NNCore = (function () {
       chips.forEach(function (c, i) { var s = document.createElement('span'); s.className = 'ci'; s.textContent = icons[i] || ''; c.insertBefore(s, c.firstChild); });
       var lab = document.createElement('button'); lab.className = 'chip'; lab.innerHTML = '<span class="ci"></span>Entraîner mon réseau de neurones'; lab.onclick = function () { PYLAB.open('train'); };
       e.querySelector('.chips').appendChild(lab);
-      var p = e.querySelector('p'); if (p) p.innerHTML = 'Q/R, Markov FR, <b>réseau PYNet</b>, images 8×8, résumé de .txt et débogage de .html — tout reste dans ton navigateur. <span class="kbd">Ctrl</span> <span class="kbd">K</span> pour tout piloter au clavier.';
+      var p = e.querySelector('p'); if (p) p.innerHTML = 'Q/R, Markov FR, <b>réseau PYNet</b>, images 8×8, résumé de .txt et débogage de .html - tout reste dans ton navigateur. <span class="kbd">Ctrl</span> <span class="kbd">K</span> pour tout piloter au clavier.';
     } catch (x) {}
   };
 
@@ -6133,9 +6153,9 @@ var NNCore = (function () {
     return cmds;
   }
   function palRender() {
-    var q = fold($q('#palIn').value), all = commands();
-    palItems = all.filter(function (c) { return !q || fold(c.t).indexOf(q) >= 0; }).slice(0, 40); palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
-    $q('#palList').innerHTML = palItems.map(function (c, i) { return '<button class="palit' + (i === palSel ? ' sel' : '') + '" data-i="' + i + '"><span class="pi">' + c.i + '</span><span>' + esc(c.t) + '</span><small>' + esc(c.k) + '</small></button>'; }).join('') || '<div style="padding:18px;color:var(--muted);font-size:14px">Aucun résultat</div>';
+    var q = fold($q('#palIn').value), all = commands().concat(PYUX.extraCmds ? PYUX.extraCmds(q) : []);
+    palItems = all.filter(function (c) { return !q || c.always || fold(c.t + ' ' + (c.k || '')).indexOf(q) >= 0; }).slice(0, 40); palSel = Math.min(palSel, Math.max(0, palItems.length - 1));
+    $q('#palList').innerHTML = palItems.map(function (c, i) { return '<button class="palit' + (i === palSel ? ' sel' : '') + '" data-i="' + i + '"><span class="pi">' + c.i + '</span><span class="palt">' + esc(c.t) + (c.sub ? '<em>' + esc(c.sub) + '</em>' : '') + '</span><small>' + esc(c.k) + '</small></button>'; }).join('') || '<div style="padding:18px;color:var(--muted);font-size:14px">Aucun résultat</div>';
     var s = $q('.palit.sel'); if (s) s.scrollIntoView({ block: 'nearest' });
   }
   function palRun(i) { var c = palItems[i]; if (!c) return; palClose(); setTimeout(c.f, 30); }
@@ -6170,7 +6190,7 @@ var NNCore = (function () {
   var endTour = function () {};
 
   /* ---------- petits correctifs ---------- */
-  try { var mb = $q('#modelBtn'); mb.firstChild.nodeValue = 'PYchat 3.5 '; $q('#modelName').textContent = 'Tout-en-un · PYNet'; } catch (e) {}
+  try { var mb = $q('#modelBtn'); mb.firstChild.nodeValue = 'PYchat 3.6 '; $q('#modelName').textContent = 'Tout-en-un · PYNet'; } catch (e) {}
   if (innerWidth <= 820) { try { if (localStorage.getItem(K('settings')) === null) { S.collapse = true; applyS(); } } catch (e) {} }
 })();
 
@@ -6234,7 +6254,7 @@ var NNCore = (function () {
     }
     else if (m.ev === 'trainEnd') {
       releaseWake(); call('hist').then(function (h) { hist = h || []; drawChart(); });
-      if (m.reason === 'done') toast('Entraînement terminé — PYNet est prêt', 'ok'); else toast('Entraînement en pause, point de contrôle sauvegardé', '');
+      if (m.reason === 'done') toast('Entraînement terminé - PYNet est prêt', 'ok'); else toast('Entraînement en pause, point de contrôle sauvegardé', '');
       ST.running = false; refresh(); loadMap();
     }
     else if (m.ev === 'log') toast(m.msg, 'err');
@@ -6279,7 +6299,7 @@ var NNCore = (function () {
     if (more.length) text += '\n\n**Pour aller plus loin :** ' + more.map(function (h) { return '[[' + h.q.replace(/\]/g, '') + ']]'; }).join(' · ');
     text += '\n\n> Réponse du réseau **PYNet** (similarité classique ' + pct(classic, 0) + ' < seuil ' + NNS.thr + ' %).';
     var think = '<div><b>Bascule neuronale</b> : la similarité classique (' + pct(classic) + ') est sous le seuil de ' + NNS.thr + ' %, la requête est donc envoyée au réseau PYNet.</div>' +
-      '<div><b>Candidats</b> (cosinus tour-question / tour-réponse) :</div>' + s.hits.map(function (h, i) { return '<div>' + (i + 1) + '. ' + esc(h.q.slice(0, 90)) + ' — <b>' + pct(h.s) + '</b></div>'; }).join('') +
+      '<div><b>Candidats</b> (cosinus tour-question / tour-réponse) :</div>' + s.hits.map(function (h, i) { return '<div>' + (i + 1) + '. ' + esc(h.q.slice(0, 90)) + ' - <b>' + pct(h.s) + '</b></div>'; }).join('') +
       '<div>Recherche exacte sur ' + fmtN(ST.pairs) + ' paires en ' + s.ms.toFixed(0) + ' ms.</div>';
     return { text: text, engine: 'Réseau neuronal PYNet', score: sim, think: think, nn: true };
   }
@@ -6305,8 +6325,8 @@ var NNCore = (function () {
       '<div class="lab-pane on" data-pane="train">' +
       '<div class="lgrid g2"><div class="lcard hero" id="labChartCard"><canvas id="labPulse"></canvas><h3>Courbe d\'apprentissage</h3><p class="sub">Perte contrastive (InfoNCE) et rappel@1 sur un jeu de validation que le réseau ne voit jamais.</p>' +
       '<div class="chartwrap"><canvas id="labChart"></canvas><div class="tip" id="labTip"></div></div><div class="legend"><span style="--c:var(--nn1)">Perte</span><span style="--c:var(--nn2)">Rappel@1 (validation)</span></div></div>' +
-      '<div class="lcard ringbox"><h3 style="align-self:flex-start">Budget d\'entraînement</h3><div style="position:relative;width:170px;height:170px;margin-top:6px"><canvas id="labRing"></canvas><div class="ringc"><b id="ringMain">—</b><small id="ringSub">restant</small></div></div><p class="note" id="ringNote" style="margin-top:10px">—</p></div></div>' +
-      '<div class="kpis" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div class="kpi"><small>Perte</small><b id="kLoss">—</b><em id="kLossS">&nbsp;</em></div><div class="kpi"><small>Rappel@1 · validation</small><b id="kR1">—</b><em id="kR1S">&nbsp;</em></div><div class="kpi"><small>MRR</small><b id="kMrr">—</b><em>qualité du classement</em></div><div class="kpi"><small>Vitesse</small><b id="kSps">—</b><em>échantillons / s</em></div><div class="kpi"><small>Étapes</small><b id="kSteps">—</b><em id="kSeen">&nbsp;</em></div><div class="kpi"><small>Taux d\'apprentissage</small><b id="kLr">—</b><em>cosinus + échauffement</em></div></div>' +
+      '<div class="lcard ringbox"><h3 style="align-self:flex-start">Budget d\'entraînement</h3><div style="position:relative;width:170px;height:170px;margin-top:6px"><canvas id="labRing"></canvas><div class="ringc"><b id="ringMain">-</b><small id="ringSub">restant</small></div></div><p class="note" id="ringNote" style="margin-top:10px">-</p></div></div>' +
+      '<div class="kpis" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div class="kpi"><small>Perte</small><b id="kLoss">-</b><em id="kLossS">&nbsp;</em></div><div class="kpi"><small>Rappel@1 · validation</small><b id="kR1">-</b><em id="kR1S">&nbsp;</em></div><div class="kpi"><small>MRR</small><b id="kMrr">-</b><em>qualité du classement</em></div><div class="kpi"><small>Vitesse</small><b id="kSps">-</b><em>échantillons / s</em></div><div class="kpi"><small>Étapes</small><b id="kSteps">-</b><em id="kSeen">&nbsp;</em></div><div class="kpi"><small>Taux d\'apprentissage</small><b id="kLr">-</b><em>cosinus + échauffement</em></div></div>' +
       '<div class="lcard" id="labCtl" style="margin-top:14px"><h3>Lancer un entraînement</h3><p class="sub">PYNet est déjà pré-entraîné sur le corpus intégré. Tu peux le <b>réentraîner</b> à tout moment sur <b>french_instruct</b> : le budget fixe la durée totale, le taux d\'apprentissage suit un cosinus sur ce temps.</p>' +
       '<div class="ctl"><label class="fld">Budget<select id="lbBudget"><option value="0.25">15 min</option><option value="1">1 h</option><option value="2">2 h</option><option value="3">3 h</option><option value="5">5 h (recommandé)</option><option value="8">8 h</option><option value="12">12 h</option></select></label>' +
       '<label class="fld">Taille du lot<select id="lbBatch"><option>32</option><option>64</option><option>128</option></select></label>' +
@@ -6314,7 +6334,7 @@ var NNCore = (function () {
       '<button class="btn primary" id="lbStart">▶ Entraîner</button><button class="btn" id="lbPause" disabled>Pause</button><button class="btn danger" id="lbReset">↺ Repartir de zéro</button></div>' +
       '<label class="note" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="lbWake" checked> Garder l\'écran allumé pendant l\'entraînement</label>' +
       '<p class="note" style="margin-top:6px">Le réseau est sauvegardé automatiquement toutes les 5 min et à chaque pause (IndexedDB). Tu peux fermer l\'onglet et reprendre plus tard.</p></div>' +
-      '<div class="lcard" style="margin-top:14px"><h3>Constellation des réponses</h3><p class="sub">Chaque point est une réponse de la base, projetée en 2D (ACP) depuis l\'espace appris. Les sujets proches se regroupent — survole un point.</p><canvas id="labMap"></canvas><div style="margin-top:8px"><button class="sbtn" id="mapRefresh">↻ Actualiser</button></div></div>' +
+      '<div class="lcard" style="margin-top:14px"><h3>Constellation des réponses</h3><p class="sub">Chaque point est une réponse de la base, projetée en 2D (ACP) depuis l\'espace appris. Les sujets proches se regroupent - survole un point.</p><canvas id="labMap"></canvas><div style="margin-top:8px"><button class="sbtn" id="mapRefresh">↻ Actualiser</button></div></div>' +
       '</div>' +
       /* --- données --- */
       '<div class="lab-pane" data-pane="data"><div class="lgrid g2"><div class="lcard" id="labDlCard"><h3>Hugging Face · angeluriot/french_instruct</h3>' +
@@ -6323,7 +6343,7 @@ var NNCore = (function () {
       '<button class="btn primary" id="dlStart">Télécharger</button><button class="btn" id="dlCancel" disabled>Annuler</button></div>' +
       '<div class="progress"><div id="dlBar"></div></div><div class="note" id="dlMsg">Aucun téléchargement en cours.</div>' +
       '<div class="callout" style="margin-top:14px">Pas d\'accès à Hugging Face (réseau d\'entreprise, hors ligne) ? Exporte le jeu depuis un autre poste et <b>importe-le</b> ci-contre : <code>.jsonl</code>, <code>.json</code> ou <code>.csv</code> avec les colonnes <code>conversation</code> / <code>question</code> / <code>instruction</code> / <code>response</code>…</div></div>' +
-      '<div class="lcard"><h3>Ma base</h3><p class="sub" id="poolSub">—</p><div class="kpis" style="grid-template-columns:1fr 1fr"><div class="kpi"><small>Paires totales</small><b id="pTot">—</b></div><div class="kpi"><small>Validation</small><b id="pVal">—</b></div><div class="kpi"><small>Corpus intégré</small><b id="pB">—</b></div><div class="kpi"><small>Hugging Face</small><b id="pH">—</b></div></div>' +
+      '<div class="lcard"><h3>Ma base</h3><p class="sub" id="poolSub">-</p><div class="kpis" style="grid-template-columns:1fr 1fr"><div class="kpi"><small>Paires totales</small><b id="pTot">-</b></div><div class="kpi"><small>Validation</small><b id="pVal">-</b></div><div class="kpi"><small>Corpus intégré</small><b id="pB">-</b></div><div class="kpi"><small>Hugging Face</small><b id="pH">-</b></div></div>' +
       '<div class="ctl" style="margin-top:12px"><button class="btn" id="dlImport">Importer un fichier</button><button class="btn" id="dlLearn">Ajouter mes Q/R apprises</button><button class="btn danger" id="dlClear">Vider</button></div><input type="file" id="dlFile" accept=".jsonl,.json,.csv,.txt" hidden></div></div>' +
       '<div class="lcard" style="margin-top:14px"><h3>Aperçu de la base</h3><div class="samples" id="samples"></div><div style="margin-top:10px"><button class="sbtn" id="smpMore">↻ Autres exemples</button></div></div></div>' +
       /* --- architecture --- */
@@ -6371,9 +6391,9 @@ var NNCore = (function () {
     var $ = function (id) { return document.getElementById(id); }; if (!$('lab')) return;
     var p = ST.params || 0;
     $('labSub').textContent = 'PYNet-Dual · ' + (p ? (p / 1e6).toFixed(1).replace('.', ',') + ' M paramètres · taille ' + (ST.size || 'S') : 'initialisation') + (ST.pretrained ? ' · pré-entraîné' : '');
-    var loss = LIVE.loss; $('kLoss').textContent = loss != null ? loss.toFixed(3) : '—'; $('kLossS').innerHTML = LIVE.acc ? 'précision de lot ' + pct(LIVE.acc, 0) : '&nbsp;';
-    var v = ST.lastVal || LIVE.val; $('kR1').textContent = v ? pct(v.r1, 1) : '—'; $('kR1S').textContent = v ? 'sur ' + v.cands + ' candidats' : 'en attente de validation'; $('kMrr').textContent = v ? v.mrr.toFixed(3) : '—';
-    $('kSps').textContent = ST.running && LIVE.sps ? fmtN(Math.round(LIVE.sps)) : '—'; $('kSteps').textContent = fmtN(ST.steps || 0); $('kSeen').textContent = fmtN((ST.steps || 0) * (ST.batch || 64)) + ' exemples vus'; $('kLr').textContent = ST.running && LIVE.lr ? LIVE.lr.toExponential(1) : '—';
+    var loss = LIVE.loss; $('kLoss').textContent = loss != null ? loss.toFixed(3) : '-'; $('kLossS').innerHTML = LIVE.acc ? 'précision de lot ' + pct(LIVE.acc, 0) : '&nbsp;';
+    var v = ST.lastVal || LIVE.val; $('kR1').textContent = v ? pct(v.r1, 1) : '-'; $('kR1S').textContent = v ? 'sur ' + v.cands + ' candidats' : 'en attente de validation'; $('kMrr').textContent = v ? v.mrr.toFixed(3) : '-';
+    $('kSps').textContent = ST.running && LIVE.sps ? fmtN(Math.round(LIVE.sps)) : '-'; $('kSteps').textContent = fmtN(ST.steps || 0); $('kSeen').textContent = fmtN((ST.steps || 0) * (ST.batch || 64)) + ' exemples vus'; $('kLr').textContent = ST.running && LIVE.lr ? LIVE.lr.toExponential(1) : '-';
     var tot = ST.budgetSec || 1, done = Math.min(tot, ST.trainedSec || 0);
     $('ringMain').textContent = ST.running ? fmtShort(tot - done) : fmtShort(done); $('ringSub').textContent = ST.running ? 'restant' : 'entraîné';
     $('ringNote').textContent = ST.running ? Math.round(done / tot * 100) + ' % du budget de ' + fmtDur(tot) + (LIVE.sps ? ' · ≈ ' + fmtN(Math.round(LIVE.sps * (tot - done) / 1000) * 1000) + ' exemples à venir' : '') : (done >= tot - 1 && done > 0 ? 'Budget épuisé : relance pour réentraîner.' : done > 0 ? 'En pause à ' + Math.round(done / tot * 100) + ' % du budget de ' + fmtDur(tot) : 'Aucun entraînement long encore effectué.');
@@ -6493,7 +6513,7 @@ var NNCore = (function () {
     var thr = NNS.thr / 100, min = NNS.min / 100, top = s && s.ready && s.hits.length ? s.hits[0] : null, nsim = top ? Math.max(0, top.s) : 0;
     var goNN = NNS.on && cs < thr, nnWins = goNN && top && nsim >= min && nsim > cs;
     var html = '<div class="route"><div class="rbox' + (!goNN ? ' win' : '') + '"><small>Moteur classique</small><b>' + pct(cs, 1) + '</b><small>' + (cs >= thr ? '≥ seuil ' + NNS.thr + ' % → il répond' : '< seuil ' + NNS.thr + ' %') + '</small></div><div class="rarrow">' + (goNN ? '→' : '') + '</div>' +
-      '<div class="rbox' + (nnWins ? ' win' : '') + '"><small>Réseau PYNet</small><b>' + (top ? pct(nsim, 1) : '—') + '</b><small>' + (!s || !s.ready ? 'pas encore prêt' : nsim >= min ? 'confiance suffisante' : 'sous la confiance minimale (' + NNS.min + ' %)') + '</small></div>' +
+      '<div class="rbox' + (nnWins ? ' win' : '') + '"><small>Réseau PYNet</small><b>' + (top ? pct(nsim, 1) : '-') + '</b><small>' + (!s || !s.ready ? 'pas encore prêt' : nsim >= min ? 'confiance suffisante' : 'sous la confiance minimale (' + NNS.min + ' %)') + '</small></div>' +
       '<div class="rbox"><small>Verdict dans le chat</small><b style="font-size:16px">' + (nnWins ? 'PYNet' : goNN ? 'Markov / classique' : 'Moteur classique') + '</b></div></div>';
     if (s && s.words && s.words.length) { var mx = Math.max.apply(0, s.words.map(function (w) { return w[1]; })) || 1; html += '<div style="margin-top:12px" class="note">Poids des mots (IDF) :<br>' + s.words.map(function (w) { return '<span class="kw" style="opacity:' + (0.4 + 0.6 * w[1] / mx).toFixed(2) + ';font-size:' + (11 + 3 * w[1] / mx).toFixed(1) + 'px">' + esc(w[0]) + '</span>'; }).join('') + '</div>'; }
     if (s && s.ready) html += s.hits.map(function (h, i) { return '<div class="hit"><span class="s">' + pct(Math.max(0, h.s)) + '</span><div class="q">' + (i + 1) + '. ' + esc(h.q.slice(0, 150)) + '</div><div class="bar"><i style="width:' + Math.max(2, Math.min(100, h.s * 100)) + '%"></i></div><div class="a">' + esc(h.a.slice(0, 260)) + (h.a.length > 260 ? '…' : '') + '</div><div class="lx">cosinus neuronal ' + pct(Math.max(0, h.raw), 0) + ' · couverture lexicale ' + pct(h.ov, 0) + '</div></div>'; }).join('');
@@ -6513,7 +6533,7 @@ var NNCore = (function () {
       var resume = (ST.trainedSec || 0) > 0 && ST.trainedSec < (ST.budgetSec || 0) - 1 && ST.phase !== 'pretrain';
       var prevSteps = ST.steps || 0;
       await call('train', { budgetSec: budget, batch: batch, resetClock: !resume, lrScale: (!resume && prevSteps > 0) ? 0.6 : 1, phase: 'train' });
-      takeWake(); toast(resume ? 'Entraînement repris' : 'Entraînement lancé — budget ' + fmtDur(budget), 'ok');
+      takeWake(); toast(resume ? 'Entraînement repris' : 'Entraînement lancé - budget ' + fmtDur(budget), 'ok');
     } catch (e) { toast(e.message, 'err'); }
   }
   function bindLab() {
@@ -6522,7 +6542,7 @@ var NNCore = (function () {
     $('labBack').onclick = closeLab;
     $('labMenu').onclick = function () { document.body.classList.remove('collapsed'); };
     $('lbStart').onclick = startTraining; $('lbPause').onclick = function () { call('pause'); };
-    $('lbReset').onclick = async function () { if (!confirm('Effacer le modèle entraîné et repartir de zéro ? (les données sont conservées)')) return; await call('reset', { size: $('lbSize').value }); hist = []; LIVE.loss = null; LIVE.val = null; toast('Modèle réinitialisé — lance un pré-entraînement', ''); startTrainingPre(); };
+    $('lbReset').onclick = async function () { if (!confirm('Effacer le modèle entraîné et repartir de zéro ? (les données sont conservées)')) return; await call('reset', { size: $('lbSize').value }); hist = []; LIVE.loss = null; LIVE.val = null; toast('Modèle réinitialisé - lance un pré-entraînement', ''); startTrainingPre(); };
     $('lbWake').checked = !!NNS.wake; $('lbWake').onchange = function () { NNS.wake = this.checked; saveNNS(); };
     $('lbBudget').value = String(NNS.budgetH); if ($('lbBudget').value !== String(NNS.budgetH)) $('lbBudget').value = '5'; $('lbBatch').value = String(NNS.batch); $('lbSize').value = NNS.size;
     $('mapRefresh').onclick = loadMap;
@@ -6680,11 +6700,11 @@ body.home .hint{display:none}
     var h = new Date().getHours(), n = userName(), w = n ? ' ' + n : '';
     var back = (typeof convs !== 'undefined') && convs.some(function (c) { return c.messages && c.messages.length; });
     var opts;
-    if (h >= 5 && h < 12) opts = ['Bonjour' + w, 'Salut' + w, 'Bien réveillé' + (n ? ', ' + n : '') + ' ?'];
-    else if (h >= 12 && h < 18) opts = ['Bon après-midi' + w, 'Salut' + w];
+    if (h >= 5 && h < 12) opts = ['Bonjour' + w, 'Coucou' + w, 'Bien réveillé' + (n ? ', ' + n : '') + ' ?'];
+    else if (h >= 12 && h < 18) opts = ['Bon après-midi' + w, 'Coucou' + w];
     else if (h >= 18 && h < 23) opts = ['Bonsoir' + w, 'Belle soirée' + w];
     else opts = ['Bonne nuit' + w, 'Encore debout' + (n ? ', ' + n : '') + ' ?'];
-    if (back) opts.push('Content de vous retrouver' + w);
+    if (back) opts.push('Content de vous revoir' + w);
     var day = new Date().toDateString() + h;
     var seed = 0; for (var i = 0; i < day.length; i++) seed = (seed * 31 + day.charCodeAt(i)) >>> 0;
     return opts[seed % opts.length];
@@ -6850,6 +6870,7 @@ body.home .hint{display:none}
     return res;
   }
   send = sendX;
+  window.__PYTHINK = { state: THINK, loader: thinkLoader, sleep: sleep, reduced: reduced, trunc: trunc };
 
   var _bubbleTh = bubble;
   bubble = function (m) {
@@ -6866,5 +6887,1567 @@ body.home .hint{display:none}
 })();
 
 </script>
+
+<style id="ux36-style">
+/* ===== PYchat 3.6 : couche UX sobre ===== */
+:root{
+  --muted:#65676e;              /* contraste AA (≈5,4:1 sur blanc) */
+  --font-sans:Inter,'Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:ui-monospace,'Cascadia Code','SF Mono',Consolas,'Liberation Mono',monospace;
+  --fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;
+  --r-sm:6px;--r-md:8px;--r-lg:12px;
+  --sbw:272px;
+  --ok:#3d7a57;--warn:#9a6a12;--bad:#b42318;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+body.dark{--muted:#a0a2aa;--ok:#7fc69b;--warn:#e0b45a;--bad:#ff8a80}
+*{font-family:var(--font-sans)}
+code,pre,pre *,kbd,.kbd,.uxmono{font-family:var(--font-mono)!important}
+.md h4.mdh{font-size:1.06em;font-weight:600;letter-spacing:-.005em;margin:1.1em 0 .35em;line-height:1.35}
+.md p{margin:.45em 0}
+.md pre{font-size:.88em;line-height:1.55}
+.md code{font-size:.9em}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:var(--r-sm)}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+body.noanim *,body.noanim *::before,body.noanim *::after{transition:none!important;animation:none!important}
+
+/* --- en-tête : fil d'Ariane, état, actions rapides --- */
+.uxcrumb{display:flex;align-items:center;gap:6px;min-width:0;font-size:var(--fs-md);color:var(--muted);padding-left:2px}
+.uxcrumb button{color:var(--muted);padding:4px 6px;border-radius:var(--r-sm);white-space:nowrap}
+.uxcrumb button:hover{color:var(--fg);background:var(--panel-2)}
+.uxcrumb .sep{opacity:.6}
+.uxcrumb .cur{color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+.uxhdr{margin-left:auto;display:flex;align-items:center;gap:4px}
+.header .voicebtn{margin-left:6px}
+.uxib{min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-md);color:var(--muted)}
+.uxib:hover{background:var(--panel-2);color:var(--fg)}
+.uxib[aria-pressed="true"]{color:var(--fg);background:var(--panel-2)}
+.uxib svg,.uxst svg,.uxsm svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.uxst{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-sm);color:var(--muted);min-height:30px;white-space:nowrap}
+.uxst:hover{color:var(--fg);background:var(--panel-2)}
+.uxst b{font-weight:600;color:var(--fg)}
+.uxdot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.uxdot.ok{background:var(--ok)}.uxdot.warn{background:var(--warn)}.uxdot.bad{background:var(--bad)}
+.uxdot.work{background:var(--warn);animation:uxbreath 1.6s ease-in-out infinite}
+@keyframes uxbreath{0%,100%{opacity:1}50%{opacity:.35}}
+@media(max-width:760px){.uxst .uxdet,.uxcrumb{display:none}}
+
+/* --- popovers génériques --- */
+.uxpop{position:fixed;z-index:95;min-width:240px;max-width:min(92vw,360px);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 10px 30px rgba(0,0,0,.12);padding:6px;font-size:var(--fs-md);animation:uxin .14s var(--ease)}
+body.dark .uxpop{box-shadow:0 10px 30px rgba(0,0,0,.45)}
+@keyframes uxin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.uxpop h5{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px 4px}
+.uxpop .it{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 10px;border-radius:var(--r-md);min-height:32px}
+.uxpop .it:hover,.uxpop .it:focus-visible{background:var(--panel-2)}
+.uxpop .it small{margin-left:auto;color:var(--muted);font-size:var(--fs-xs)}
+.uxpop .it.danger{color:var(--bad)}
+.uxpop .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;padding:8px 10px;font-size:var(--fs-sm)}
+.uxpop .kv dt{color:var(--muted)}
+.uxpop .kv dd{margin:0;color:var(--fg);word-break:break-word}
+.uxpop .why{padding:8px 10px;font-size:var(--fs-sm);line-height:1.5;border-top:1px solid var(--line);margin-top:4px}
+.uxpop hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.uxpop .radio{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--r-md);cursor:pointer}
+.uxpop .radio:hover{background:var(--panel-2)}
+.uxpop .radio .eng-st{margin-left:auto;font-size:var(--fs-xs);color:var(--muted)}
+.uxpop input[type=radio],.uxpop input[type=checkbox]{accent-color:var(--fg);width:15px;height:15px}
+
+/* --- composer : bouton Arrêter --- */
+#uxStop{display:none}
+body.generating #uxStop{display:inline-flex}
+body.generating #send{display:none}
+#uxStop{background:var(--fg);color:var(--bg)}
+#uxStop svg{fill:currentColor;stroke:none}
+.uxload{display:flex;align-items:center;gap:10px;padding:18px 0;color:var(--muted);font-size:var(--fs-md)}
+.uxload .bar{width:42px;height:2px;border-radius:2px;background:var(--line);overflow:hidden;position:relative}
+.uxload .bar::after{content:"";position:absolute;inset:0;width:40%;background:var(--fg);opacity:.55;animation:uxslide 1.1s var(--ease) infinite}
+@keyframes uxslide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+.uxload .t{font-variant-numeric:tabular-nums;font-size:var(--fs-sm)}
+.msg.ai.revealing .meta,.msg.ai.revealing .uxtoc,.msg.ai.revealing .uxcmp{visibility:hidden}
+.uxcaret{display:inline-block;width:.5em;height:1.05em;vertical-align:-.15em;background:var(--fg);opacity:.5;margin-left:2px;animation:uxblink 1s steps(2) infinite}
+@keyframes uxblink{50%{opacity:0}}
+.uxstopped{color:var(--muted);font-size:var(--fs-sm);margin-top:6px}
+.composer .hint .kbd{margin:0 2px}
+
+/* --- messages : badge, jauge, heure, actions --- */
+.msg{position:relative}
+.uxbadge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:var(--fs-xs);color:var(--muted);min-height:24px}
+.uxbadge:hover{color:var(--fg);background:var(--panel-2)}
+.uxbadge .e{color:var(--fg);font-weight:500}
+.uxgauge{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--muted)}
+.uxgauge .g{width:54px;height:4px;border-radius:4px;background:var(--line);overflow:hidden}
+.uxgauge .g i{display:block;height:100%;background:var(--fg);opacity:.7;border-radius:4px}
+.uxgauge.low .g i{background:var(--warn);opacity:1}
+.uxtime{font-size:var(--fs-xs);color:var(--muted);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .15s}
+.msg:hover .uxtime,.msg:focus-within .uxtime{opacity:1}
+.msg.user .uxtime{position:absolute;right:4px;bottom:-6px}
+.msg.ai .meta .speak{min-height:24px}
+@media (hover:hover){
+  .msg.ai .meta .speak{opacity:0;transition:opacity .15s}
+  .msg.ai:hover .meta .speak,.msg.ai:focus-within .meta .speak,.msg.ai.last .meta .speak{opacity:1}
+}
+.uxnote{font-size:var(--fs-sm);color:var(--muted);margin-top:6px;white-space:normal}
+.uxday{display:flex;align-items:center;gap:12px;margin:18px 0 6px;color:var(--muted);font-size:var(--fs-xs);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.uxday::before,.uxday::after{content:"";flex:1;border-top:1px solid var(--line)}
+.msg.uxflash{animation:uxflash 1.6s ease}
+@keyframes uxflash{0%,40%{background:var(--panel-2)}100%{background:transparent}}
+.msg.uxflash{border-radius:var(--r-lg)}
+
+/* sommaire */
+.uxtoc{border:1px solid var(--line);border-radius:var(--r-md);padding:6px 10px;margin:4px 0 10px;font-size:var(--fs-sm);white-space:normal}
+.uxtoc summary{cursor:pointer;color:var(--muted);list-style:none;display:flex;align-items:center;gap:6px}
+.uxtoc summary::-webkit-details-marker{display:none}
+.uxtoc summary::before{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
+.uxtoc[open] summary::before{transform:rotate(45deg)}
+.uxtoc ol{margin:6px 0 2px 18px;padding:0}
+.uxtoc li{margin:2px 0}
+.uxtoc button{color:var(--fg);text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.uxtoc button:hover{text-decoration-color:currentColor}
+
+/* comparaison */
+.uxcmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;white-space:normal}
+.uxcmp .col{border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;font-size:.93em;line-height:1.6;min-width:0}
+.uxcmp .col h6{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.uxcmp .col h6 span{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400}
+.uxcmp .col.na{color:var(--muted)}
+@media(max-width:700px){.uxcmp{grid-template-columns:1fr}}
+
+/* sélection multiple */
+.uxselbox{display:none;position:absolute;left:-30px;top:16px}
+.uxselbox input{width:16px;height:16px;accent-color:var(--fg)}
+body.selecting .uxselbox{display:block}
+body.selecting .msg{cursor:pointer}
+body.selecting .msg.sel{background:var(--panel-2);border-radius:var(--r-lg)}
+@media(max-width:900px){.uxselbox{left:-2px;top:4px}body.selecting .msg{padding-left:24px}}
+#uxSelBar{display:none;position:sticky;bottom:0;z-index:5;margin:0 auto 8px;max-width:var(--cw,760px);background:var(--bg);border:1px solid var(--line);border-radius:var(--r-lg);padding:6px 8px 6px 14px;align-items:center;gap:6px;font-size:var(--fs-md);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+body.selecting #uxSelBar{display:flex}
+#uxSelBar .n{margin-right:auto;color:var(--muted)}
+.uxbtn{border:1px solid var(--line);border-radius:var(--r-md);padding:5px 11px;font-size:var(--fs-sm);min-height:28px;background:var(--bg)}
+.uxbtn:hover{background:var(--panel-2)}
+.uxbtn.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.uxbtn.pri:hover{opacity:.88;background:var(--fg)}
+.uxbtn.danger{color:var(--bad)}
+.uxbtn:disabled{opacity:.45;cursor:default}
+
+/* --- barre latérale : redimensionnement, historique --- */
+@media(min-width:821px){
+  body:not(.collapsed):not(.focusmode) .sidebar{width:var(--sbw);flex:0 0 var(--sbw)}
+  body.resizing .sidebar{transition:none}
+  #uxResizer{flex:0 0 5px;margin-left:-5px;cursor:col-resize;position:relative;z-index:30}
+  #uxResizer::after{content:"";position:absolute;top:0;bottom:0;left:2px;width:1px;background:transparent;transition:background .15s}
+  #uxResizer:hover::after,#uxResizer:focus-visible::after,body.resizing #uxResizer::after{background:var(--fg);opacity:.35}
+  body.collapsed #uxResizer,body.focusmode #uxResizer,body.lab-open #uxResizer{display:none}
+}
+@media(max-width:820px){#uxResizer{display:none}}
+body.resizing{cursor:col-resize;user-select:none}
+.search{position:relative}
+.search .kbd{margin-left:auto;cursor:pointer;white-space:nowrap}
+#uxTagBar{display:none;gap:4px;flex-wrap:wrap;padding:8px 12px 0}
+#uxTagBar.on{display:flex}
+.uxtag{font-size:var(--fs-xs);border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted);min-height:24px;background:var(--bg)}
+.uxtag:hover{color:var(--fg)}
+.uxtag[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.conv{position:relative}
+.conv .ct{flex:1;min-width:0;padding:7px 4px;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.conv .ct .tt{font-size:var(--fs-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .ct .sn{font-size:var(--fs-xs);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.conv .ct .tg{font-size:10.5px;color:var(--muted)}
+.conv mark{background:transparent;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.conv .cb{opacity:0;min-width:26px;min-height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--r-sm);color:var(--muted)}
+.conv .cb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.conv:hover .cb,.conv:focus-within .cb,.conv .cb.pinned{opacity:1}
+.conv .cb:hover{background:var(--panel-2);color:var(--fg)}
+.conv .cb.pinned svg{fill:currentColor}
+@media (hover:none){.conv .cb{opacity:1}}
+.hist h4.grp{padding-top:10px}
+.uxtrashlink{display:flex;align-items:center;gap:8px;margin:10px 6px 4px;padding:6px 10px;font-size:var(--fs-sm);color:var(--muted);border-radius:var(--r-md);width:calc(100% - 12px)}
+.uxtrashlink:hover{background:var(--panel-2);color:var(--fg)}
+.uxtrashlink svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8}
+.acct{flex-wrap:wrap}
+.uxguest{width:100%;font-size:var(--fs-xs);color:var(--muted);line-height:1.45;padding-left:24px}
+.uxguest button{color:var(--fg);text-decoration:underline;text-underline-offset:2px;font-size:var(--fs-xs)}
+
+/* --- toasts avec action --- */
+#uxToasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.uxtoast{pointer-events:auto;display:flex;align-items:center;gap:14px;background:var(--fg);color:var(--bg);padding:9px 10px 9px 16px;border-radius:var(--r-lg);font-size:var(--fs-md);box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:min(92vw,520px);animation:uxin .18s var(--ease)}
+.uxtoast button{color:var(--bg);font-weight:600;padding:4px 10px;border-radius:var(--r-sm);min-height:28px;text-decoration:underline;text-underline-offset:3px}
+.uxtoast button:hover{background:rgba(127,127,127,.2)}
+.uxtoast .x{opacity:.7;text-decoration:none;font-weight:400}
+.uxtoast .prog{position:absolute}
+
+/* --- modale générique --- */
+.uxmodal{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;padding:20px}
+.uxmodal .box2{background:var(--bg);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.2);animation:uxin .16s var(--ease)}
+.uxmodal header{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.uxmodal header h2{font-size:16px;font-weight:600;margin-right:auto}
+.uxmodal .bd{overflow:auto;padding:8px 16px 16px}
+.uxmodal .ft{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line)}
+.uxrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:var(--fs-md)}
+.uxrow:last-child{border-bottom:0}
+.uxrow .grow{flex:1;min-width:0}
+.uxrow .grow b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uxrow .grow small{color:var(--muted);font-size:var(--fs-xs)}
+.uxempty{color:var(--muted);font-size:var(--fs-md);padding:18px 0;text-align:center}
+
+/* --- paramètres en onglets --- */
+.uxtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:14px 0 16px;position:sticky;top:-40px;background:var(--overlay);z-index:2;padding-top:6px}
+.uxtab{padding:9px 14px;font-size:var(--fs-md);color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:var(--r-md) var(--r-md) 0 0;min-height:36px}
+.uxtab:hover{color:var(--fg);background:var(--panel)}
+.uxtab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--fg);font-weight:600}
+.uxpanel[hidden]{display:none}
+.settings .inner h2 .crumb{font-weight:400;color:var(--muted);font-size:.7em;margin-left:8px}
+details.uxadv{border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
+details.uxadv summary{cursor:pointer;padding:8px 0;font-size:var(--fs-md);color:var(--muted)}
+details.uxadv summary:hover{color:var(--fg)}
+.uxhelp{font-size:var(--fs-sm);color:var(--muted);line-height:1.55;margin:4px 0 8px}
+.uxguide{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;margin-top:8px;font-size:var(--fs-sm);line-height:1.6;background:var(--panel)}
+.uxguide ol{margin:6px 0 0 18px}
+.uxguide li{margin:4px 0}
+.uxcode{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);padding:1px 4px 1px 8px;font-size:12px}
+.uxcode button{font-size:var(--fs-xs);color:var(--muted);padding:1px 6px;border-radius:4px}
+.uxcode button:hover{color:var(--fg);background:var(--panel-2)}
+.uxcheck{list-style:none;margin:6px 0 0;padding:0}
+.uxcheck li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:var(--fs-md)}
+.uxcheck li:last-child{border-bottom:0}
+.uxcheck .ck{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.uxcheck li.done .ck{background:var(--fg);border-color:var(--fg)}
+.uxcheck li.done .ck::after{content:"";width:5px;height:9px;border-right:2px solid var(--bg);border-bottom:2px solid var(--bg);transform:rotate(45deg) translate(-1px,-1px)}
+.uxcheck .lbl{flex:1}
+.uxcheck .lbl small{display:block;color:var(--muted);font-size:var(--fs-xs)}
+.uxprog{height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:8px}
+.uxprog i{display:block;height:100%;background:var(--fg);transition:width .3s var(--ease)}
+
+/* --- accueil --- */
+.uxcaps{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin-top:12px;font-size:var(--fs-sm);color:var(--muted)}
+.uxcaps span{display:inline-flex;align-items:center;gap:6px}
+.uxcaps button{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.uxcaps button:hover{color:var(--fg)}
+#homeChips .uxtpl{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-top:4px;font-size:var(--fs-sm);color:var(--muted)}
+#homeChips .uxtpl b{font-weight:500;margin-right:4px}
+#homeChips .uxtpl button{border:1px solid var(--line);border-radius:999px;padding:4px 12px;color:var(--fg);font-size:var(--fs-sm);min-height:28px;background:var(--bg)}
+#homeChips .uxtpl button:hover{background:var(--panel-2)}
+.uxsimple-link{margin-top:10px;font-size:var(--fs-sm)}
+.uxsimple-link button{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+
+/* --- visite guidée --- */
+#uxTour{position:fixed;inset:0;z-index:130}
+#uxTour .hole{position:fixed;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);transition:all .25s var(--ease);pointer-events:none}
+#uxTour .card{position:fixed;width:min(340px,calc(100vw - 24px));background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 16px 40px rgba(0,0,0,.25);transition:top .25s var(--ease),left .25s var(--ease)}
+#uxTour .card .st{font-size:var(--fs-xs);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+#uxTour .card h3{font-size:16px;margin:6px 0 6px;font-weight:600}
+#uxTour .card p{font-size:var(--fs-md);line-height:1.55;color:var(--fg)}
+#uxTour .card .row2{display:flex;align-items:center;gap:8px;margin-top:14px}
+#uxTour .card .row2 .sp{margin-right:auto}
+#uxTour .pips{display:flex;gap:5px}
+#uxTour .pips i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+#uxTour .pips i.on{background:var(--fg)}
+
+/* --- vocal : barre rapide --- */
+.uxvbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;margin-top:22px;font-size:var(--fs-sm);color:var(--muted)}
+.uxvbar label{display:inline-flex;align-items:center;gap:6px}
+.uxvbar select,.cfg.uxsel2{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:var(--r-md);padding:5px 8px;font-size:var(--fs-sm);max-width:220px;min-height:30px}
+.uxvbar input[type=range]{width:110px;accent-color:var(--fg)}
+.uxvbar output{font-variant-numeric:tabular-nums;min-width:38px;color:var(--fg)}
+
+/* --- modes d'affichage --- */
+body.compact .msg.ai{padding:8px 0;line-height:1.58}
+body.compact .msg.user{padding:6px 0}
+body.compact .msg.user .b{padding:7px 13px;border-radius:16px}
+body.compact .header{padding:5px 10px}
+body.compact .conv .ct{padding:4px 4px}
+body.compact .composer{padding-bottom:10px}
+body.compact .hist{padding-top:8px}
+body.compact .card{padding:12px}
+@media(max-width:600px){.msg.ai{padding:10px 0}.header{padding:6px 8px}}
+body.simple #navLab,body.simple .trainbar,body.simple #thinkBtn,body.simple .uxadvonly{display:none!important}
+body.noexp #navLab,body.noexp #thinkBtn,body.noexp .uxexp{display:none!important}
+body.focusmode .sidebar{width:0!important;flex-basis:0!important;border-right:0!important}
+body.focusmode #expand,body.focusmode .uxcrumb,body.focusmode .uxst,body.focusmode .uxhdr .uxhide-focus,body.focusmode .voicebtn,body.focusmode .composer .hint,body.focusmode .msg.ai .meta .uxbadge,body.focusmode .msg.ai .meta .uxgauge,body.focusmode #toBottom{display:none!important}
+body.focusmode .header{border-bottom-color:transparent}
+#uxFocusExit{display:none}
+body.focusmode #uxFocusExit{display:inline-flex}
+#homeChips{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){#homeChips{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#settingsOverlay{background:var(--bg)}
+.uxtabs{background:var(--bg)}
+.palt{display:flex;flex-direction:column;min-width:0;flex:1}
+.palt em{font-style:normal;font-size:var(--fs-xs);color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uxcmp{align-items:start}
+.uxcmp .col{max-height:340px;overflow:auto}
+@media(max-width:600px){#uxToasts{left:12px;right:12px;transform:none}.uxtoast{max-width:none}}
+</style>
+
+<script>
+/* ===== PYchat 3.6 : couche UX (partie 1 : socle, état, en-tête, toasts, moteurs) ===== */
+(function () {
+  'use strict';
+  var UX = window.UX36 = { gen: null, lastMs: 0, ollama: { state: 'unknown', models: [] }, tagFilter: '', selecting: false, compareOnce: false };
+  var $1 = function (s, r) { return (r || document).querySelector(s); };
+  var $n = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var esc = UX.esc = function (s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  var fold = UX.fold = function (s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+  var reduced = UX.reduced = function () { return (window.S && S.anim === false) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); };
+  var sleep = UX.sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var IC = UX.IC = {
+    sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    moon: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg>',
+    full: '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
+    unfull: '<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
+    focus: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>',
+    stop: '<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>',
+    pin: '<svg viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3H7l3-3-1-6ZM12 13v7"/></svg>',
+    more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
+    trash: '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
+    x: '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+  };
+
+  /* ---------- préférences propres à l'appareil (hors compte) ---------- */
+  var FL_KEY = 'pychat.ux36.flags';
+  var FL = UX.flags = (function () { try { return JSON.parse(localStorage.getItem(FL_KEY) || '{}') || {}; } catch (e) { return {}; } })();
+  UX.saveFlags = function () { try { localStorage.setItem(FL_KEY, JSON.stringify(FL)); } catch (e) {} };
+
+  /* ---------- nouveaux réglages ---------- */
+  var NEW = { engine: 'auto', compare: false, gauge: true, compact: false, focus: false, hideExp: false, sbw: 272, vlang: 'fr-FR', vvoice: '', trashDays: 30 };
+  Object.keys(NEW).forEach(function (k) { if (!(k in DEF)) DEF[k] = NEW[k]; });
+  UX.fillDefaults = function () {
+    Object.keys(NEW).forEach(function (k) { if (S[k] === undefined) S[k] = NEW[k]; });
+    if (S.simple === undefined) { S.simple = !(convs || []).some(function (c) { return c.messages && c.messages.length; }); saveS(); }
+  };
+
+  /* ---------- région d'annonce (role=status, présente dès le chargement) ---------- */
+  var live = document.createElement('div'); live.id = 'uxLive'; live.className = 'sr-only'; live.setAttribute('role', 'status'); document.body.appendChild(live);
+  UX.announce = function (t) { live.textContent = ''; setTimeout(function () { live.textContent = t; }, 100); };
+  try { var th = $1('#thread'); th.setAttribute('role', 'log'); th.setAttribute('aria-live', 'off'); th.setAttribute('aria-label', 'Historique de la discussion'); } catch (e) {}
+
+  /* ---------- toasts avec action (8 s, pause au survol/focus, Ctrl+Z) ---------- */
+  var tbox = document.createElement('div'); tbox.id = 'uxToasts'; document.body.appendChild(tbox);
+  var undoStack = [];
+  UX.toast = function (msg, opts) {
+    opts = opts || {};
+    var t = document.createElement('div'); t.className = 'uxtoast';
+    var sp = document.createElement('span'); sp.textContent = msg; t.appendChild(sp);
+    var left = opts.ms || (opts.action ? 8000 : 3200), timer = null, t0 = 0, closed = false;
+    function close() { if (closed) return; closed = true; clearTimeout(timer); t.style.transition = 'opacity .2s'; t.style.opacity = '0'; setTimeout(function () { t.remove(); }, 220); var i = undoStack.indexOf(entry); if (i >= 0) undoStack.splice(i, 1); }
+    function arm() { t0 = Date.now(); timer = setTimeout(close, left); }
+    function pause() { clearTimeout(timer); left -= Date.now() - t0; if (left < 1500) left = 1500; }
+    var entry = { run: function () { if (opts.action) opts.action.fn(); close(); } };
+    if (opts.action) {
+      var b = document.createElement('button'); b.textContent = opts.action.label; b.onclick = entry.run; t.appendChild(b);
+      undoStack.push(entry);
+    }
+    var x = document.createElement('button'); x.className = 'x'; x.setAttribute('aria-label', 'Fermer la notification'); x.textContent = '×'; x.onclick = close; t.appendChild(x);
+    t.addEventListener('mouseenter', pause); t.addEventListener('mouseleave', arm);
+    t.addEventListener('focusin', pause); t.addEventListener('focusout', arm);
+    tbox.appendChild(t); arm();
+    UX.announce(msg + (opts.action ? '. ' + opts.action.label + ' disponible, Ctrl+Z.' : ''));
+    return { close: close };
+  };
+  if (window.PYUX) PYUX.toast = function (m, type) { UX.toast(m, { ms: type === 'err' ? 6000 : 3200 }); };
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && undoStack.length) {
+      var a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || a.tagName === 'INPUT') && a.value) return;
+      e.preventDefault(); undoStack[undoStack.length - 1].run();
+    }
+  });
+
+  /* ---------- popovers ---------- */
+  var openPop = null;
+  UX.closePop = function () { if (openPop) { var p = openPop; openPop = null; p.el.remove(); if (p.anchor && p.anchor.setAttribute) { p.anchor.setAttribute('aria-expanded', 'false'); if (p.refocus !== false) try { p.anchor.focus(); } catch (e) {} } } };
+  UX.popover = function (anchor, html, opts) {
+    opts = opts || {};
+    var same = openPop && openPop.anchor === anchor; UX.closePop(); if (same && !opts.force) return null;
+    var el = document.createElement('div'); el.className = 'uxpop'; el.innerHTML = html;
+    if (opts.role) el.setAttribute('role', opts.role); if (opts.label) el.setAttribute('aria-label', opts.label);
+    document.body.appendChild(el);
+    var r = anchor.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+    var left = opts.alignRight ? r.right - w : r.left; left = Math.max(8, Math.min(innerWidth - w - 8, left));
+    var top = r.bottom + 6; if (top + h > innerHeight - 8) top = Math.max(8, r.top - h - 6);
+    el.style.left = left + 'px'; el.style.top = top + 'px';
+    anchor.setAttribute('aria-expanded', 'true');
+    openPop = { el: el, anchor: anchor };
+    var f = el.querySelector('[data-autofocus]') || el.querySelector('button,input,select,[tabindex]'); if (!f) { el.tabIndex = -1; f = el; } setTimeout(function () { f.focus(); }, 10);
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); UX.closePop(); }
+      if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && el.getAttribute('role') === 'menu') {
+        e.preventDefault(); var its = $n('[role=menuitem]', el), i = its.indexOf(document.activeElement);
+        i = e.key === 'ArrowDown' ? (i + 1) % its.length : (i - 1 + its.length) % its.length; its[i].focus();
+      }
+    });
+    return el;
+  };
+  document.addEventListener('mousedown', function (e) { if (openPop && !openPop.el.contains(e.target) && !openPop.anchor.contains(e.target)) { openPop.refocus = false; UX.closePop(); } });
+  window.addEventListener('resize', function () { if (openPop) { openPop.refocus = false; UX.closePop(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && openPop) { e.preventDefault(); UX.closePop(); } }, true);
+  document.addEventListener('scroll', function (e) { if (openPop && !openPop.el.contains(e.target)) { openPop.refocus = false; UX.closePop(); } }, true);
+
+  /* ---------- modale générique (dialogue) ---------- */
+  UX.modal = function (title, bodyHtml, footHtml) {
+    var prev = document.activeElement;
+    var m = document.createElement('div'); m.className = 'uxmodal';
+    m.innerHTML = '<div class="box2" role="dialog" aria-modal="true" aria-labelledby="uxmT"><header><h2 id="uxmT">' + esc(title) + '</h2><button class="uxib" data-close aria-label="Fermer" title="Fermer (Échap)">' + IC.x + '</button></header><div class="bd">' + bodyHtml + '</div>' + (footHtml ? '<div class="ft">' + footHtml + '</div>' : '') + '</div>';
+    document.body.appendChild(m);
+    function close() { m.remove(); document.removeEventListener('keydown', onKey, true); try { prev && prev.focus(); } catch (e) {} }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); close(); }
+      if (e.key === 'Tab') { var f = $n('button,input,select,textarea,[tabindex]:not([tabindex="-1"])', m).filter(function (x) { return !x.disabled && x.offsetParent; }); if (!f.length) return; var a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } }
+    }
+    document.addEventListener('keydown', onKey, true);
+    m.addEventListener('mousedown', function (e) { if (e.target === m) close(); });
+    m.querySelector('[data-close]').onclick = close;
+    setTimeout(function () { var f = m.querySelector('.bd button, .ft button, .bd input') || m.querySelector('[data-close]'); f.focus(); }, 20);
+    return { el: m, close: close };
+  };
+
+  /* ---------- fichiers ---------- */
+  UX.download = function (name, text, type) { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); };
+  UX.copy = function (t) { try { navigator.clipboard.writeText(t); return true; } catch (e) { return false; } };
+  UX.fmtMs = function (ms) { ms = ms || 0; return ms < 1000 ? Math.round(ms) + ' ms' : (ms / 1000).toFixed(1).replace('.', ',') + ' s'; };
+  UX.pct = function (x) { return Math.round((x || 0) * 100) + ' %'; };
+
+  /* ================================================================== */
+  /* MOTEURS : état, diagnostic Ollama 3 états, routage, comparaison     */
+  /* ================================================================== */
+  function ollamaBase() { return (S.llmUrl || 'http://localhost:11434').replace(/\/$/, ''); }
+  function tfetch(url, opt, ms) {
+    var c = new AbortController(), to = setTimeout(function () { c.abort(); }, ms || 1800);
+    opt = Object.assign({}, opt || {}, { signal: c.signal });
+    return fetch(url, opt).finally(function () { clearTimeout(to); });
+  }
+  /* état : 'off' (désactivé), 'ok', 'nomodel', 'cors' (tourne mais bloque l'origine), 'down' (injoignable), 'unknown' */
+  UX.checkOllama = async function () {
+    if (!S.llm) { UX.ollama = { state: 'off', models: [] }; UX.refreshStatus(); return UX.ollama; }
+    UX.ollama.state = 'checking'; UX.refreshStatus();
+    var res;
+    try {
+      var r = await tfetch(ollamaBase() + '/api/tags', {}, 2000);
+      if (r.status === 403) res = { state: 'cors', models: [] };
+      else {
+        var j = await r.json(), names = (j.models || []).map(function (m) { return m.name; });
+        var want = S.llmModel || 'llama3.2';
+        res = { state: !names.length ? 'nomodel' : names.some(function (n) { return n.indexOf(want) === 0; }) ? 'ok' : 'nomodel', models: names, want: want };
+      }
+    } catch (e) {
+      try { await tfetch(ollamaBase() + '/api/tags', { mode: 'no-cors' }, 2000); res = { state: 'cors', models: [] }; }
+      catch (e2) { res = { state: 'down', models: [] }; }
+    }
+    UX.ollama = res; UX.refreshStatus(); if (UX.renderGuide) UX.renderGuide();
+    return res;
+  };
+  var OL_TXT = { off: 'Désactivé', ok: 'Connecté', nomodel: 'Modèle absent', cors: 'Bloqué (origine)', down: 'Injoignable', unknown: 'Non testé', checking: 'Vérification…' };
+  UX.engineState = function () {
+    var mk = window.MarkovFR ? (MarkovFR.isReady() ? 'ok' : MarkovFR.isBuilding() ? 'work' : 'idle') : 'idle';
+    var st = window.PYNN ? PYNN.state() : null, nn = 'idle', nnTxt = 'Non entraîné';
+    if (st) {
+      if (st.ready) { nn = 'ok'; nnTxt = 'Prêt · ' + (st.pairs || 0).toLocaleString('fr-FR') + ' paires'; }
+      if (st.running || /download|index|init|pretrain|train/.test(st.phase || '')) { nn = st.ready ? 'ok' : 'work'; if (!st.ready) nnTxt = st.phase === 'download' ? 'Téléchargement…' : st.phase === 'init' ? 'Initialisation…' : 'Entraînement…'; }
+    }
+    return { markov: mk, markovTxt: mk === 'ok' ? 'Prêt' : mk === 'work' ? 'Entraînement…' : 'En attente', nn: nn, nnTxt: nnTxt, ol: UX.ollama.state, olTxt: OL_TXT[UX.ollama.state] || '-' };
+  };
+  var ENG_LBL = { auto: 'Automatique', markov: 'Markov FR', pynet: 'PYNet', ollama: 'Ollama' };
+  UX.engineLabel = function (k) { return ENG_LBL[k || S.engine] || 'Automatique'; };
+
+  function markovDirect(q, paras) {
+    if (!window.MarkovFR || !MarkovFR.isReady()) return null;
+    var t0 = performance.now(), g = MarkovFR.generate(q, { paragraphs: paras || Math.max(1, S.len), words: paras ? 70 : 110 });
+    if (!g) return null;
+    var sc = 0; try { sc = bestQaMatch(q).score; } catch (e) {}
+    return { text: g.text, engine: 'Markov FR', markov: true, score: sc, forced: true, ms: performance.now() - t0, keywords: g.keywords };
+  }
+  async function pynetDirect(q, k) {
+    if (!window.PYNN || !PYNN.state().ready) return null;
+    try {
+      var s = await PYNN.call('search', { text: q, k: k || 3, explain: false });
+      if (!s || !s.ready || !s.hits || !s.hits.length) return null;
+      var top = s.hits[0];
+      return { text: top.a, engine: 'Réseau neuronal PYNet', nn: true, score: Math.max(0, Math.min(1, top.s)), hits: s.hits.slice(0, 3).map(function (h) { return { q: h.q, s: h.s }; }), forced: true, ms: s.ms };
+    } catch (e) { return null; }
+  }
+  UX.markovDirect = markovDirect; UX.pynetDirect = pynetDirect;
+
+  async function ollamaAnswer(q, gen) {
+    try {
+      var hist = active.messages.slice(-9, -1).map(function (m) { return { role: m.role === 'user' ? 'user' : 'assistant', content: m.text || '' }; }).filter(function (m) { return m.content; });
+      var to = setTimeout(function () { try { gen.ctl.abort(); } catch (e) {} }, 90000), t0 = performance.now();
+      var r = await fetch(ollamaBase() + '/api/chat', { method: 'POST', signal: gen.ctl.signal, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: S.llmModel || 'llama3.2', stream: false, messages: [{ role: 'system', content: "Tu es PYchat, un assistant francophone clair, utile et honnête. Réponds en français, sans inventer de faits." }].concat(hist, [{ role: 'user', content: q }]) }) });
+      clearTimeout(to);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      var j = await r.json(), tx = j && j.message && j.message.content;
+      if (!tx) throw new Error('vide');
+      UX.ollama.state = 'ok';
+      var tps = j.eval_count && j.eval_duration ? j.eval_count / (j.eval_duration / 1e9) : 0;
+      return { text: tx.trim(), engine: 'LLM local · ' + (S.llmModel || 'llama3.2'), score: 1, fast: true, llm: true, tps: tps, ms: performance.now() - t0 };
+    } catch (e) {
+      if (gen.cancelled) return null;
+      if (UX.ollama.state === 'ok' || UX.ollama.state === 'unknown') UX.checkOllama();
+      return null;
+    }
+  }
+
+  /* routage : respecte le moteur choisi, sinon l'enchaînement automatique d'origine */
+  UX.route = async function (text, files, gen) {
+    var sp = await specialAnswer(text, files); if (sp) return sp;
+    var mode = S.engine || 'auto', note = '';
+    if (mode === 'ollama' || (mode === 'auto' && S.llm)) {
+      var o = await ollamaAnswer(text, gen); if (o) return o;
+      if (gen.cancelled) return null;
+      if (mode === 'ollama' || S.llm) note = 'Ollama ne répond pas : réponse produite localement.';
+    }
+    if (mode === 'markov') { var m = markovDirect(text); if (m) return m; note = 'Markov FR est encore en entraînement : réponse produite par le routage automatique.'; }
+    if (mode === 'pynet') { var p = await pynetDirect(text); if (p) return p; note = "PYNet n'est pas encore entraîné : réponse produite par le routage automatique."; }
+    var r = await answerFor(text, files);
+    if (note && r) r.notice = note;
+    return r;
+  };
+
+  UX.compare = async function (q) {
+    var out = [], t0 = performance.now(), m = markovDirect(q, 1);
+    out.push(m ? { engine: 'Markov FR', text: m.text, ms: performance.now() - t0 } : { engine: 'Markov FR', na: window.MarkovFR && MarkovFR.isBuilding() ? 'Entraînement en cours…' : 'Pas encore prêt.' });
+    var p = await pynetDirect(q, 3);
+    out.push(p ? { engine: 'PYNet', text: p.text, score: p.score, ms: p.ms } : { engine: 'PYNet', na: 'Réseau non entraîné. Ouvre le Neural Lab pour l\u2019entraîner.' });
+    return out;
+  };
+
+  /* ---------- raison lisible + nom court ---------- */
+  UX.shortEngine = function (e) {
+    e = e || '';
+    if (/^LLM/.test(e)) return 'Ollama'; if (/PYNet/.test(e)) return 'PYNet'; if (/^Markov FR \(/.test(e)) return 'Markov (entraînement)';
+    if (/Markov/.test(e)) return 'Markov'; if (/Q\/R direct/.test(e)) return 'Q/R direct'; if (/Jaccard/.test(e)) return 'Q/R';
+    if (/littéraire/i.test(e)) return 'Littérature'; if (/Corpus brut/.test(e)) return 'Corpus'; if (/Documents/.test(e)) return 'Documents';
+    if (/Exécuteur/.test(e)) return 'Débogueur HTML'; if (/Pixel|image/i.test(e)) return 'Image 8×8'; if (/Résumé/.test(e)) return 'Résumé';
+    return e.split('·')[0].trim() || 'PYchat';
+  };
+  UX.reason = function (meta) {
+    var e = meta.engine || '', p = function (v) { return (Math.round((v || 0) * 1000) / 10).toString().replace('.', ',') + ' %'; }, thr = meta.thr != null ? meta.thr : S.thr, nthr = meta.nnthr != null ? meta.nnthr : (window.PYNN ? PYNN.settings.thr : 55);
+    if (meta.stopped) return 'Génération arrêtée à ta demande.';
+    if (meta.forced) return 'Moteur choisi manuellement (' + UX.shortEngine(e) + ') dans la barre d\u2019état.';
+    if (/^LLM/.test(e)) return 'Ollama est activé et joignable : la réponse vient du modèle local « ' + (meta.llmModel || S.llmModel) + ' ».';
+    if (/PYNet/.test(e)) return 'Similarité classique trop faible (sous ' + nthr + ' %) : la question a été confiée au réseau PYNet, qui a trouvé une réponse proche (score ' + p(meta.score) + ').';
+    if (/^Markov FR \(/.test(e)) return 'La chaîne de Markov était encore en entraînement au moment de la question.';
+    if (/Markov/.test(e)) return 'Aucune fiche assez proche : similarité ' + p(meta.score) + ', sous le seuil de ' + thr + ' %. PYchat a donc généré le texte avec sa chaîne de Markov française (texte probabiliste, à recouper).';
+    if (/Q\/R direct/.test(e)) return 'Question reconnue telle quelle : salutation, calcul ou question déjà présente dans la base.';
+    if (/Jaccard/.test(e)) return 'Fiche la plus proche dans la base Q/R, avec une similarité de ' + p(meta.score) + ' (au-dessus du seuil de ' + thr + ' %).';
+    if (/littéraire/i.test(e)) return 'Pas de fiche dédiée : un passage réel a été retrouvé dans le corpus littéraire par index inversé.';
+    if (/Corpus brut/.test(e)) return 'Passage du corpus brut plus proche de la question que les fiches Q/R.';
+    if (/Documents/.test(e)) return 'Réponse extraite des fichiers que tu as joints.';
+    if (/Exécuteur/.test(e)) return 'Ton fichier HTML a été exécuté dans un bac à sable pour repérer les erreurs.';
+    if (/Explication/.test(e)) return 'Analyse locale de la réponse précédente.';
+    if (/Erreur/.test(e)) return 'Une erreur interne s\u2019est produite.';
+    return 'Moteur utilisé : ' + e + '.';
+  };
+  /* niveau verbal de correspondance (un cosinus n'est pas une probabilité) */
+  UX.level = function (s) { var hi = (window.PYNN ? PYNN.settings.min : 45) / 100 + 0.2; return s >= hi ? { n: 3, t: 'Correspondance forte' } : s >= hi - 0.15 ? { n: 2, t: 'Correspondance moyenne' } : { n: 1, t: 'Correspondance faible' }; };
+
+  /* ================================================================== */
+  /* EN-TÊTE : fil d'Ariane, état, thème, plein écran, concentration     */
+  /* ================================================================== */
+  var header = $1('.main .header'), voiceBtn = $1('#voiceBtn');
+  var crumb = document.createElement('nav'); crumb.className = 'uxcrumb'; crumb.setAttribute('aria-label', 'Fil d\u2019Ariane');
+  $1('.menuwrap').after(crumb);
+  var hdr = document.createElement('div'); hdr.className = 'uxhdr';
+  hdr.innerHTML =
+    '<button class="uxst" id="uxStatus" aria-haspopup="dialog" aria-expanded="false" title="État des moteurs et choix du moteur"><span class="uxdot" id="uxDot"></span><b id="uxStLbl">Chargement…</b><span class="uxdet" id="uxStDet"></span></button>' +
+    '<button class="uxib uxhide-focus" id="uxTheme" aria-label="Basculer clair / sombre" title="Basculer clair / sombre (Ctrl+Maj+L)"></button>' +
+    '<button class="uxib uxhide-focus" id="uxFull" aria-label="Plein écran" aria-pressed="false" title="Plein écran"></button>' +
+    '<button class="uxib uxhide-focus" id="uxFocus" aria-label="Mode concentration" aria-pressed="false" title="Mode concentration (Ctrl+Maj+F)">' + IC.focus + '</button>' +
+    '<button class="uxbtn" id="uxFocusExit" title="Quitter le mode concentration (Échap)">Quitter la concentration</button>';
+  header.insertBefore(hdr, voiceBtn);
+
+  UX.refreshCrumb = function () {
+    var t = active ? active.title || 'Nouvelle discussion' : '';
+    crumb.innerHTML = '<button type="button" id="uxCrumbHome">Discussions</button><span class="sep" aria-hidden="true">›</span><span class="cur" aria-current="page" title="' + esc(t) + '">' + esc(t) + '</span>';
+    $1('#uxCrumbHome').onclick = function () { if (document.body.classList.contains('collapsed')) { document.body.classList.remove('collapsed'); $1('#expand').style.display = 'none'; } $1('#search').focus(); };
+    try {
+      var lt = $1('.lab-title p#labSub'), tab = $1('.lab-tab.on');
+      var lc = $1('#uxLabCrumb'); if (!lc && $1('.lab-title')) { lc = document.createElement('div'); lc.id = 'uxLabCrumb'; lc.className = 'uxcrumb'; lc.style.fontSize = '12.5px'; $1('.lab-title').prepend(lc); }
+      if (lc) lc.innerHTML = '<button type="button" onclick="PYLAB.close()">PYchat</button><span class="sep">›</span><span>Neural Lab</span>' + (tab ? '<span class="sep">›</span><span class="cur" aria-current="page">' + esc(tab.textContent) + '</span>' : '');
+    } catch (e) {}
+  };
+
+  UX.refreshStatus = function () {
+    var es = UX.engineState(), dot = $1('#uxDot'), lbl = $1('#uxStLbl'), det = $1('#uxStDet'); if (!dot) return;
+    var mode = S.engine || 'auto', cls = 'ok', L = 'Prêt';
+    if (window.busy) { cls = 'work'; L = 'Génération…'; }
+    else if (mode === 'ollama' && es.ol !== 'ok') { cls = es.ol === 'checking' ? 'work' : 'bad'; L = es.ol === 'checking' ? 'Vérification…' : 'Hors ligne'; }
+    else if (mode === 'pynet' && es.nn !== 'ok') { cls = 'warn'; L = 'PYNet non prêt'; }
+    else if (es.markov !== 'ok') { cls = 'work'; L = 'Chargement…'; }
+    else if (S.llm && mode === 'auto' && /down|cors|nomodel/.test(es.ol)) { cls = 'warn'; L = 'Prêt (Ollama hors ligne)'; }
+    dot.className = 'uxdot ' + cls; lbl.textContent = L;
+    det.textContent = ' · ' + UX.engineLabel(mode) + (UX.lastMs ? ' · ' + UX.fmtMs(UX.lastMs) : '');
+    $1('#uxStatus').setAttribute('aria-label', 'État : ' + L + '. Moteur : ' + UX.engineLabel(mode) + '. Ouvrir les détails');
+  };
+  function statusHtml() {
+    var es = UX.engineState(), mode = S.engine || 'auto';
+    function dot(s) { return '<span class="uxdot ' + (s === 'ok' ? 'ok' : s === 'work' || s === 'checking' ? 'work' : /down|cors|nomodel/.test(s) ? 'bad' : '') + '"></span>'; }
+    function radio(k, lbl, st, txt) { return '<label class="radio"><input type="radio" name="uxEng" value="' + k + '"' + (mode === k ? ' checked' : '') + (k === 'auto' ? ' data-autofocus' : '') + '>' + lbl + '<span class="eng-st">' + (st ? dot(st) + ' ' : '') + esc(txt || '') + '</span></label>'; }
+    return '<h5>Moteur de réponse</h5>' +
+      radio('auto', 'Automatique', '', 'recommandé') +
+      radio('markov', 'Markov FR', es.markov, es.markovTxt) +
+      '<div class="uxexp">' + radio('pynet', 'PYNet', es.nn, es.nnTxt) + '</div>' +
+      radio('ollama', 'Ollama', S.llm ? es.ol : 'off', S.llm ? es.olTxt : 'désactivé') +
+      '<hr><label class="radio uxexp"><input type="checkbox" id="uxCmpChk"' + (S.compare ? ' checked' : '') + '>Comparer Markov et PYNet<span class="eng-st">côte à côte</span></label>' +
+      '<div class="kv"><dt>Dernière réponse</dt><dd>' + (UX.lastMs ? UX.fmtMs(UX.lastMs) + ' · ' + esc(UX.lastEngine || '') : '-') + '</dd><dt>Modèle Ollama</dt><dd>' + esc(S.llmModel || 'llama3.2') + '</dd><dt>Données</dt><dd>Tout reste dans ce navigateur</dd></div>' +
+      (S.llm && /down|cors|nomodel/.test(es.ol) ? '<button class="it" id="uxOlGuide">Résoudre la connexion Ollama<small>guide</small></button>' : '') +
+      '<button class="it" id="uxStSet">Réglages du moteur<small>Moteur IA</small></button>';
+  }
+  $1('#uxStatus').onclick = function () {
+    var el = UX.popover(this, statusHtml(), { role: 'dialog', label: 'État et choix du moteur', alignRight: true }); if (!el) return;
+    $n('input[name=uxEng]', el).forEach(function (r) { r.onchange = function () { UX.setEngine(r.value); }; });
+    var c = $1('#uxCmpChk', el); if (c) c.onchange = function () { S.compare = c.checked; saveS(); UX.syncControls(); UX.toast(S.compare ? 'Comparaison Markov / PYNet activée' : 'Comparaison désactivée'); };
+    var g = $1('#uxOlGuide', el); if (g) g.onclick = function () { UX.closePop(); UX.openSettings('moteur', '#uxOllamaGuide'); };
+    $1('#uxStSet', el).onclick = function () { UX.closePop(); UX.openSettings('moteur'); };
+  };
+  UX.setEngine = function (k) {
+    S.engine = k; if (k === 'ollama' && !S.llm) { S.llm = true; UX.checkOllama(); }
+    saveS(); applyS(); UX.refreshStatus(); UX.syncControls();
+    UX.toast('Moteur : ' + UX.engineLabel(k));
+  };
+  setInterval(function () { UX.refreshStatus(); }, 1200);
+  window.addEventListener('focus', function () { if (S.llm && /down|cors|nomodel|unknown/.test(UX.ollama.state)) UX.checkOllama(); });
+  (function backoff() { var d = 5000; (function tick() { setTimeout(function () { if (S.llm && /down|cors/.test(UX.ollama.state)) { UX.checkOllama(); d = Math.min(60000, d * 2); } else d = 5000; tick(); }, d); })(); })();
+
+  /* thème */
+  function isDark() { return document.body.classList.contains('dark'); }
+  UX.toggleTheme = function () {
+    var go = function () { S.theme = isDark() ? 'light' : 'dark'; FL.cfgTheme = true; UX.saveFlags(); saveS(); applyS(); };
+    if (document.startViewTransition && !reduced()) document.startViewTransition(go); else go();
+  };
+  $1('#uxTheme').onclick = UX.toggleTheme;
+  function syncThemeBtn() { var b = $1('#uxTheme'); if (b) { b.innerHTML = isDark() ? IC.sun : IC.moon; b.setAttribute('aria-label', isDark() ? 'Passer au thème clair' : 'Passer au thème sombre'); } }
+
+  /* plein écran */
+  var fsOk = !!(document.documentElement.requestFullscreen);
+  UX.toggleFull = function () {
+    if (!fsOk) { UX.toggleFocus(); return; }
+    if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () { UX.toast('Plein écran refusé par le navigateur'); });
+  };
+  $1('#uxFull').onclick = UX.toggleFull;
+  function syncFull() { var b = $1('#uxFull'), on = !!document.fullscreenElement; b.innerHTML = on ? IC.unfull : IC.full; b.setAttribute('aria-pressed', on); b.title = on ? 'Quitter le plein écran (Échap)' : 'Plein écran'; b.setAttribute('aria-label', b.title); }
+  document.addEventListener('fullscreenchange', syncFull); syncFull();
+
+  /* concentration */
+  UX.toggleFocus = function (force) {
+    S.focus = typeof force === 'boolean' ? force : !S.focus; saveS(); UX.applyModes();
+    UX.announce(S.focus ? 'Mode concentration activé. Échap pour quitter.' : 'Mode concentration désactivé');
+  };
+  $1('#uxFocus').onclick = function () { UX.toggleFocus(); };
+  $1('#uxFocusExit').onclick = function () { UX.toggleFocus(false); };
+
+  UX.applyModes = function () {
+    var b = document.body;
+    b.classList.toggle('compact', !!S.compact); b.classList.toggle('focusmode', !!S.focus);
+    b.classList.toggle('noexp', !!S.hideExp); b.classList.toggle('simple', !!S.simple);
+    b.classList.toggle('noanim', S.anim === false);
+    document.documentElement.style.setProperty('--sbw', Math.max(200, Math.min(440, S.sbw || 272)) + 'px');
+    document.documentElement.style.setProperty('--cw', (S.width || 760) + 'px');
+    var f = $1('#uxFocus'); if (f) f.setAttribute('aria-pressed', !!S.focus);
+    syncThemeBtn();
+    if (S.vlang) try { document.documentElement.lang = 'fr'; } catch (e) {}
+  };
+  var _applyS = applyS;
+  applyS = function () { _applyS.apply(this, arguments); try { UX.fillDefaults && S && UX.applyModes(); } catch (e) {} };
+
+  /* ---------- composer : bouton Arrêter, indices de raccourcis ---------- */
+  var stop = document.createElement('button'); stop.className = 'round'; stop.id = 'uxStop'; stop.setAttribute('aria-label', 'Arrêter la génération'); stop.title = 'Arrêter la génération (Échap)'; stop.innerHTML = IC.stop;
+  $1('#send').after(stop);
+  stop.onclick = function () { UX.stopGen(); };
+  UX.stopGen = function () {
+    var g = UX.gen; if (!g || g.cancelled) return; g.cancelled = true; try { g.ctl.abort(); } catch (e) {} if (g.stopResolve) g.stopResolve('__stop');
+    UX.announce('Génération arrêtée');
+  };
+  UX.setGenerating = function (on) {
+    document.body.classList.toggle('generating', on);
+    if (!on) { setTimeout(function () { if (!UX.selecting) try { input.focus(); } catch (e) {} }, 0); }
+    UX.refreshStatus();
+  };
+  var hint = $1('.composer .hint');
+  if (hint) hint.innerHTML = '<span class="kbd">Entrée</span> envoyer · <span class="kbd">Maj+Entrée</span> nouvelle ligne · <span class="kbd">Ctrl+K</span> commandes · <span class="kbd">Ctrl+/</span> raccourcis &nbsp;-&nbsp; Gabriel LEGET';
+
+  /* ---------- infobulles et raccourcis visibles ---------- */
+  var TIPS = { '#newChat': 'Nouvelle discussion (Ctrl+Maj+O)', '#collapse': 'Replier la barre latérale (Ctrl+B)', '#expand': 'Ouvrir la barre latérale (Ctrl+B)', '#send': 'Envoyer (Entrée)', '#attach': 'Joindre un fichier (.txt, .md, .html)', '#dictate': 'Dicter un message', '#voiceBtn': 'Mode vocal', '#openSettings': 'Paramètres (Ctrl+,)', '#navLab': 'Neural Lab (Alt+L)', '#navChat': 'Discussions', '#acctBtn': 'Changer de profil local' };
+  UX.tips = function () {
+    Object.keys(TIPS).forEach(function (s) { var e = $1(s); if (e) { e.title = TIPS[s]; if (!e.getAttribute('aria-label') && !e.textContent.trim()) e.setAttribute('aria-label', TIPS[s]); } });
+    $n('button[aria-label]:not([title])').forEach(function (b) { b.title = b.getAttribute('aria-label'); });
+  };
+  UX.tips();
+  var srch = $1('#search'); if (srch) { srch.placeholder = 'Rechercher'; srch.setAttribute('aria-label', 'Rechercher dans les discussions et les messages'); var kk = document.createElement('span'); kk.className = 'kbd'; kk.textContent = 'Ctrl K'; kk.title = 'Palette de commandes'; kk.onclick = function () { if (window.PYUX && PYUX.palette) PYUX.palette(); }; srch.after(kk); }
+
+  /* ---------- barre latérale redimensionnable (séparateur ARIA) ---------- */
+  var rz = document.createElement('div'); rz.id = 'uxResizer'; rz.setAttribute('role', 'separator'); rz.setAttribute('aria-orientation', 'vertical'); rz.setAttribute('aria-label', 'Largeur de la barre latérale'); rz.setAttribute('aria-valuemin', '200'); rz.setAttribute('aria-valuemax', '440'); rz.tabIndex = 0; rz.title = 'Glisser pour redimensionner · double-clic : largeur par défaut · flèches au clavier';
+  $1('.sidebar').after(rz);
+  function setSbw(w, save) { S.sbw = Math.max(200, Math.min(440, Math.round(w))); rz.setAttribute('aria-valuenow', S.sbw); document.documentElement.style.setProperty('--sbw', S.sbw + 'px'); if (save) saveS(); }
+  rz.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); rz.setPointerCapture(e.pointerId); document.body.classList.add('resizing');
+    var mv = function (ev) { setSbw(ev.clientX); }, up = function () { document.body.classList.remove('resizing'); rz.removeEventListener('pointermove', mv); rz.removeEventListener('pointerup', up); saveS(); };
+    rz.addEventListener('pointermove', mv); rz.addEventListener('pointerup', up);
+  });
+  rz.addEventListener('dblclick', function () { setSbw(272, true); });
+  rz.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setSbw((S.sbw || 272) - 16, true); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); setSbw((S.sbw || 272) + 16, true); }
+    else if (e.key === 'Home') { e.preventDefault(); setSbw(200, true); } else if (e.key === 'End') { e.preventDefault(); setSbw(440, true); }
+    else if (e.key === 'Enter') { e.preventDefault(); $1('#collapse').click(); }
+  });
+
+  /* ---------- mode invité clarifié ---------- */
+  UX.refreshAcct = function () {
+    var a = $1('.acct'); if (!a) return; var g = $1('.uxguest', a);
+    if (!g) { g = document.createElement('div'); g.className = 'uxguest'; a.appendChild(g); }
+    if (!currentUser) g.innerHTML = 'Mode invité : l\u2019historique reste dans ce navigateur, sur cet appareil. <button type="button" id="uxSignup">Créer un profil local</button>';
+    if (currentUser) g.textContent = 'Profil local · historique stocké dans ce navigateur';
+    var su = $1('#uxSignup'); if (su) su.onclick = function () { setAuthMode('signup'); $1('#authOverlay').classList.add('on'); setTimeout(function () { $1('#authUser').focus(); }, 30); };
+  };
+  try { $1('#authGuest').textContent = 'Continuer en invité (historique local)'; } catch (e) {}
+})();
+</script>
+
+<script>
+/* ===== PYchat 3.6 : couche UX (partie 2 : envoi, messages, historique, corbeille) ===== */
+(function () {
+  'use strict';
+  var UX = window.UX36, esc = UX.esc, fold = UX.fold, sleep = UX.sleep, IC = UX.IC;
+  var $1 = function (s, r) { return (r || document).querySelector(s); };
+  var $n = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var STOP = '__stop';
+
+  /* ================================================================== */
+  /* ENVOI : réflexion, routage, arrêt, comparaison, affichage progressif */
+  /* ================================================================== */
+  function loader() {
+    var d = document.createElement('div'); d.className = 'uxload'; d.setAttribute('aria-hidden', 'true');
+    var eng = S.engine && S.engine !== 'auto' ? UX.engineLabel(S.engine) : 'PYchat';
+    d.innerHTML = '<span class="bar"></span><span>' + esc(eng) + ' réfléchit…</span><span class="t">0,0 s</span>';
+    var t0 = performance.now(), tm = d.querySelector('.t');
+    var iv = setInterval(function () { if (!document.body.contains(d)) return clearInterval(iv); tm.textContent = ((performance.now() - t0) / 1000).toFixed(1).replace('.', ',') + ' s'; }, 100);
+    return d;
+  }
+  function race(p, gen) { return Promise.race([p, gen.stopP]); }
+
+  function metaOf(res, t0, extra) {
+    var m = { model: model.name, engine: res.engine, markov: !!res.markov, score: res.score, ms: Math.round(performance.now() - t0),
+      thr: S.thr, nnthr: window.PYNN ? PYNN.settings.thr : 55, forced: !!res.forced, nn: !!res.nn || /PYNet/.test(res.engine || ''),
+      llmModel: res.llm ? (S.llmModel || 'llama3.2') : undefined, tps: res.tps || undefined, hits: res.hits || undefined, notice: res.notice || undefined, mode: S.engine || 'auto' };
+    return Object.assign(m, extra || {});
+  }
+
+  async function sendUX(raw) {
+    var text = (raw !== undefined ? raw : input.value).trim();
+    if (!text || busy) return;
+    if (UX.selecting) UX.exitSelect();
+    if (window.PYLAB && PYLAB.isOpen()) PYLAB.close();
+    var files = attachments.slice(), att = files.map(function (f) { return f.name; });
+    attachments = []; renderFiles(); input.value = ''; autosize(); sendBtn.disabled = true;
+    if (window.__ghostHide) window.__ghostHide();
+    if (S.title && !active.messages.length) active.title = text.slice(0, 42);
+    active.messages.push({ role: 'user', text: text, files: att, ts: Date.now() }); active.updated = Date.now();
+    renderConvs(); renderThread(); persist();
+    if (window.__ghostInvalidate) window.__ghostInvalidate();
+
+    busy = true;
+    var gen = UX.gen = { cancelled: false, ctl: new AbortController() };
+    gen.stopP = new Promise(function (r) { gen.stopResolve = r; });
+    UX.setGenerating(true); UX.announce('PYchat rédige une réponse');
+    var TH = window.__PYTHINK, thinking = !!(TH && TH.state.on && !S.simple && !S.hideExp), th = null, load;
+    if (thinking) { th = TH.loader(); load = th.el; } else load = loader();
+    thread.appendChild(load); scroll.scrollTop = scroll.scrollHeight;
+    var t0 = performance.now(), res = null, pace = UX.reduced() ? 100 : 520, cmp = null, wantCmp = (S.compare && !S.hideExp) || UX.compareOnce;
+    UX.compareOnce = false;
+    try {
+      if (thinking) {
+        th.step('Je lis la question', '« ' + TH.trunc(text, 90) + ' »' + (att.length ? ' · fichiers : ' + att.join(', ') : ''));
+        if ((await race(sleep(pace), gen)) === STOP) throw STOP;
+        var kw = (typeof webKeywords === 'function' ? webKeywords(text) : '') || '';
+        th.step('Je repère les notions clés', kw ? kw.split(' ').join(' · ') : 'question courte, je garde le contexte');
+        if ((await race(sleep(pace), gen)) === STOP) throw STOP;
+        th.step('J\u2019interroge mes sources', 'moteur : ' + UX.engineLabel(S.engine) + ' · base Q/R (' + qaPairs.length.toLocaleString('fr-FR') + ' paires)');
+      }
+      await race(Promise.all(files.map(function (f) { return f.ready || null; })), gen);
+      res = await race(UX.route(text, files, gen), gen);
+      if (res === STOP || gen.cancelled) throw STOP;
+      if (!res) res = { text: 'Je n\u2019ai pas pu produire de réponse.', engine: 'Erreur', score: 0 };
+      if (wantCmp && !res.img && !res.trace) { cmp = await race(UX.compare(text), gen); if (cmp === STOP) throw STOP; }
+      if (thinking) {
+        th.step('Je compare les pistes', 'moteur retenu : ' + res.engine + (typeof res.score === 'number' ? ' · similarité ' + (res.score * 100).toFixed(1).replace('.', ',') + ' %' : ''));
+        if ((await race(sleep(pace), gen)) === STOP) throw STOP;
+        th.step('Je rédige la réponse', 'mise en forme et vérification des garde-fous');
+        if ((await race(sleep(pace * 0.7), gen)) === STOP) throw STOP;
+      } else {
+        var wait = res.fast ? 0 : 220 + Math.random() * 380;
+        if ((await race(sleep(Math.max(0, wait - (performance.now() - t0))), gen)) === STOP) throw STOP;
+      }
+    } catch (err) {
+      if (err === STOP || gen.cancelled) res = null;
+      else res = { text: 'Oups, une erreur interne : ' + (err && err.message || err), engine: 'Erreur', score: 0 };
+    }
+    var thinkMs = th ? th.finish() : 0;
+    load.remove();
+
+    if (!res) { /* arrêté avant toute réponse */
+      var sm = { role: 'assistant', text: '_Génération arrêtée avant la réponse._', ts: Date.now(), meta: metaOf({ engine: 'Arrêté', score: 0 }, t0, { stopped: true }) };
+      active.messages.push(sm); persist(); thread.appendChild(bubble(sm)); UX.decorate();
+      return finish(gen, sm);
+    }
+    var thinkHtml = res.think || null;
+    if (thinking) thinkHtml = '<div class="th-log">' + th.log.map(function (s) { return '<div><b>' + esc(s[0]) + '</b>' + (s[1] ? '<small>' + esc(s[1]) + '</small>' : '') + '</div>'; }).join('') + '</div>' + (res.think ? '<hr style="border:0;border-top:1px solid var(--line);margin:8px 0">' + res.think : '');
+    var msg = { role: 'assistant', text: res.text, img: res.img || null, trace: res.trace || null, think: thinkHtml, thinkMs: thinkMs || undefined, ts: Date.now(), compare: cmp || undefined, q: text, meta: metaOf(res, t0) };
+    active.messages.push(msg); active.updated = Date.now(); persist();
+    var node = bubble(msg); thread.appendChild(node); UX.decorate();
+    await reveal(node, msg, gen);
+    return finish(gen, msg, res);
+  }
+  function finish(gen, msg, res) {
+    busy = false; UX.gen = null;
+    UX.lastMs = msg.meta ? msg.meta.ms : 0; UX.lastEngine = msg.meta ? UX.shortEngine(msg.meta.engine) : '';
+    UX.setGenerating(false); scroll.scrollTop = scroll.scrollHeight;
+    UX.announce(msg.meta && msg.meta.stopped ? 'Génération arrêtée' : 'Réponse prête : ' + UX.shortEngine(msg.meta && msg.meta.engine));
+    $n('.msg.ai.last').forEach(function (e) { e.classList.remove('last'); }); var l = thread.querySelector('.msg.ai:last-of-type'); if (l) l.classList.add('last');
+    return res;
+  }
+  /* affichage par blocs (paragraphes), honnête : pas de faux "streaming" lettre à lettre */
+  async function reveal(node, msg, gen) {
+    var el = node.firstChild; if (!el || !(S.type && S.anim !== false) || UX.reduced() || msg.text.length < 140 || /^LLM/.test(msg.meta.engine) && false) return;
+    var blocks = String(msg.text).split(/\n{2,}/); if (blocks.length < 2) return;
+    node.classList.add('revealing');
+    var shown = 0;
+    for (var i = 1; i <= blocks.length; i++) {
+      if (gen.cancelled) break;
+      el.innerHTML = md(blocks.slice(0, i).join('\n\n')); shown = i;
+      if (i < blocks.length) { var c = document.createElement('span'); c.className = 'uxcaret'; c.setAttribute('aria-hidden', 'true'); var last = el.querySelector('.md > :last-child') || el; last.appendChild(c); }
+      scroll.scrollTop = scroll.scrollHeight;
+      await sleep(Math.min(420, 90 + blocks[i - 1].length * 0.9));
+    }
+    if (gen.cancelled && shown < blocks.length) {
+      msg.text = blocks.slice(0, shown).join('\n\n'); msg.meta.stopped = true; msg.meta.partial = true; persist();
+      var nn = bubble(msg); node.replaceWith(nn); UX.decorate(); return;
+    }
+    node.classList.remove('revealing');
+    el.innerHTML = md(msg.text);
+  }
+  send = sendUX;
+  /* le bouton Régénérer d'origine rappelle send(), tout passe donc par ce nouveau flux */
+
+  /* ================================================================== */
+  /* MESSAGES : badge moteur, jauge, heure, sommaire, comparaison, actions */
+  /* ================================================================== */
+  function fmtTime(ts) { var d = new Date(ts); return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+  function fmtFull(ts) { return new Date(ts).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  function timeEl(ts) { var t = document.createElement('time'); t.className = 'uxtime'; t.dateTime = new Date(ts).toISOString(); t.textContent = fmtTime(ts); t.title = fmtFull(ts); return t; }
+
+  function gauge(score) {
+    var L = UX.level(score), g = document.createElement('span'); g.className = 'uxgauge' + (L.n === 1 ? ' low' : '');
+    g.setAttribute('role', 'meter'); g.setAttribute('aria-valuemin', '0'); g.setAttribute('aria-valuemax', '100'); g.setAttribute('aria-valuenow', Math.round(score * 100));
+    g.setAttribute('aria-valuetext', L.t + ' (score ' + score.toFixed(2).replace('.', ',') + ')');
+    g.title = L.t + ' - score cosinus ' + score.toFixed(2).replace('.', ',') + ' (ce n\u2019est pas une probabilité)';
+    g.innerHTML = '<span class="g" aria-hidden="true"><i style="width:' + Math.round(L.n / 3 * 100) + '%"></i></span>' + esc(L.t.replace('Correspondance ', '')) ;
+    return g;
+  }
+
+  /* schéma du routage : chemin réellement emprunté */
+  function routeMap(meta) {
+    var e = meta.engine || '', steps = [['Q/R', /Q\/R|Corpus brut|Documents|littéraire/i.test(e)], ['PYNet', /PYNet/.test(e)], ['Markov', /Markov/.test(e)], ['Ollama', /^LLM/.test(e)]];
+    if (/Exécuteur|Pixel|Résumé|Explication|Arrêté|Erreur/.test(e)) return '';
+    var html = '<div class="kv" style="grid-template-columns:1fr"><dd style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px">';
+    steps.forEach(function (s, i) { html += '<span style="padding:2px 8px;border-radius:999px;border:1px solid ' + (s[1] ? 'var(--fg)' : 'var(--line)') + ';' + (s[1] ? 'background:var(--fg);color:var(--bg);font-weight:600' : 'color:var(--muted)') + '">' + s[0] + '</span>' + (i < steps.length - 1 ? '<span aria-hidden="true" style="color:var(--muted)">→</span>' : ''); });
+    html += '</dd>';
+    if (typeof meta.score === 'number' && !/^LLM|Q\/R direct/.test(e)) {
+      var v = Math.max(0, Math.min(1, meta.score)), t = (meta.thr != null ? meta.thr : S.thr) / 100;
+      html += '<dd style="margin-top:6px"><div style="position:relative;height:6px;border-radius:6px;background:var(--line)" aria-hidden="true"><i style="position:absolute;left:0;top:0;bottom:0;width:' + (v * 100) + '%;background:var(--fg);opacity:.6;border-radius:6px"></i><b style="position:absolute;top:-3px;bottom:-3px;width:2px;left:' + (t * 100) + '%;background:var(--bad)"></b></div><small style="color:var(--muted)">similarité ' + UX.pct(v) + ' · seuil Markov ' + Math.round(t * 100) + ' %</small></dd>';
+    }
+    return html + '</div>';
+  }
+  function badgePop(btn, m) {
+    var mt = m.meta || {}, rows = '<dt>Moteur</dt><dd>' + esc(mt.engine || '-') + '</dd>';
+    if (typeof mt.score === 'number' && !/^LLM/.test(mt.engine || '')) rows += '<dt>' + (mt.nn ? 'Score PYNet' : 'Similarité') + '</dt><dd>' + UX.pct(mt.score) + (mt.nn ? ' · ' + UX.level(mt.score).t.toLowerCase() : '') + '</dd>';
+    if (mt.hits && mt.hits.length > 1) rows += '<dt>Écart 1er/2e</dt><dd>' + ((mt.hits[0].s - mt.hits[1].s) * 100).toFixed(1).replace('.', ',') + ' pts</dd>';
+    rows += '<dt>Durée</dt><dd>' + UX.fmtMs(mt.ms) + (mt.tps ? ' · ' + mt.tps.toFixed(0) + ' jetons/s' : '') + '</dd>';
+    if (mt.llmModel) rows += '<dt>Modèle</dt><dd>' + esc(mt.llmModel) + '</dd>';
+    if (m.ts) rows += '<dt>Date</dt><dd>' + esc(fmtFull(m.ts)) + '</dd>';
+    var html = '<h5>Pourquoi ce moteur ?</h5>' + routeMap(mt) + '<div class="kv">' + rows + '</div><div class="why">' + esc(UX.reason(mt)) + '</div>';
+    UX.popover(btn, html, { role: 'dialog', label: 'Détails du moteur' });
+  }
+
+  function toc(d, m) {
+    var hs = $n('.md h4.mdh', d); if (hs.length < 3 || (m.text || '').length < 1200) return;
+    var det = document.createElement('details'); det.className = 'uxtoc';
+    det.innerHTML = '<summary>Sommaire · ' + hs.length + ' sections</summary><ol>' + hs.map(function (h, i) { return '<li><button type="button" data-i="' + i + '">' + esc(h.textContent) + '</button></li>'; }).join('') + '</ol>';
+    det.addEventListener('click', function (e) { var b = e.target.closest('button[data-i]'); if (!b) return; var h = hs[+b.getAttribute('data-i')]; h.scrollIntoView({ behavior: UX.reduced() ? 'auto' : 'smooth', block: 'start' }); h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); });
+    d.insertBefore(det, d.firstChild);
+  }
+  function compareBlock(m) {
+    var w = document.createElement('div'); w.className = 'uxcmp uxexp'; w.setAttribute('role', 'group'); w.setAttribute('aria-label', 'Comparaison Markov et PYNet');
+    m.compare.forEach(function (c, i) {
+      var col = document.createElement('section'); col.className = 'col' + (c.na ? ' na' : '');
+      col.innerHTML = '<h6><span style="margin:0;text-transform:uppercase;letter-spacing:.06em;font-weight:600">' + esc(c.engine) + '</span><span>' + (c.na ? '' : (c.score != null ? UX.level(c.score).t.replace('Correspondance ', '') + ' · ' : '') + UX.fmtMs(c.ms)) + '</span></h6>' + (c.na ? '<p>' + esc(c.na) + '</p>' : md(c.text));
+      if (!c.na && m.q) {
+        var b = document.createElement('button'); b.className = 'uxbtn'; b.style.marginTop = '8px'; b.textContent = c.learned ? 'Ajoutée à la base Q/R' : 'Préférer celle-ci'; b.disabled = !!c.learned;
+        b.title = 'Ajoute cette réponse à la base Q/R : la prochaine question identique y répondra directement';
+        b.onclick = function () { try { learn([{ question: m.q, reponse: c.text }]); c.learned = true; persist(); b.textContent = 'Ajoutée à la base Q/R'; b.disabled = true; UX.toast('+1 paire apprise · ' + qaPairs.length.toLocaleString('fr-FR') + ' paires'); if (window.__ghostInvalidate) __ghostInvalidate(); } catch (e) { UX.toast('Impossible d\u2019apprendre cette paire'); } };
+        col.appendChild(b);
+      }
+      w.appendChild(col);
+    });
+    return w;
+  }
+
+  var _bubble = bubble;
+  bubble = function (m) {
+    var d = _bubble(m);
+    try {
+      d.__m = m; if (m.ts) d.dataset.ts = m.ts;
+      var sel = document.createElement('label'); sel.className = 'uxselbox'; sel.innerHTML = '<input type="checkbox" aria-label="Sélectionner ce message">'; d.appendChild(sel);
+      sel.querySelector('input').onchange = function () { d.classList.toggle('sel', this.checked); UX.updateSel(); };
+      if (m.role === 'user') {
+        if (m.ts) d.appendChild(timeEl(m.ts));
+        var hd = document.createElement('h3'); hd.className = 'sr-only'; hd.textContent = 'Ton message'; d.insertBefore(hd, d.firstChild);
+      } else {
+        var hd2 = document.createElement('h3'); hd2.className = 'sr-only'; hd2.textContent = 'Réponse de PYchat'; d.insertBefore(hd2, d.firstChild);
+        var body = d.children[1];
+        var meta = d.querySelector('.meta');
+        if (meta) {
+          $n('.tag', meta).forEach(function (t) { var nx = t.nextElementSibling; if (nx && nx.tagName === 'SPAN' && !nx.className) nx.remove(); t.remove(); });
+          if (m.meta) {
+            var b = document.createElement('button'); b.className = 'uxbadge'; b.setAttribute('aria-haspopup', 'dialog'); b.setAttribute('aria-expanded', 'false');
+            b.innerHTML = '<span class="e">' + esc(UX.shortEngine(m.meta.engine)) + '</span>' + (m.meta.ms != null ? '<span>' + UX.fmtMs(m.meta.ms) + '</span>' : '');
+            b.title = 'Pourquoi ce moteur ? ' + UX.reason(m.meta); b.setAttribute('aria-label', 'Moteur : ' + UX.shortEngine(m.meta.engine) + '. Voir pourquoi');
+            b.onclick = function (e) { e.stopPropagation(); badgePop(b, m); };
+            meta.insertBefore(b, meta.firstChild);
+            if (m.meta.nn && typeof m.meta.score === 'number' && S.gauge !== false) b.after(gauge(m.meta.score));
+          }
+          var ex = document.createElement('button'); ex.className = 'speak'; ex.textContent = 'Expliquer'; ex.title = 'Expliquer cette réponse : moteur, raisons, résumé'; ex.onclick = function () { UX.explain(m); };
+          meta.appendChild(ex);
+          if (m.ts) meta.appendChild(timeEl(m.ts));
+        }
+        if (m.meta && m.meta.stopped && m.meta.partial) { var st = document.createElement('div'); st.className = 'uxstopped'; st.textContent = 'Réponse interrompue.'; d.insertBefore(st, meta); }
+        if (m.meta && m.meta.notice) { var nt = document.createElement('div'); nt.className = 'uxnote'; nt.textContent = m.meta.notice; d.insertBefore(nt, meta); }
+        if (m.compare && m.compare.length) d.insertBefore(compareBlock(m), meta);
+        if (body) toc(body, m);
+      }
+    } catch (e) { console.warn(e); }
+    return d;
+  };
+
+  /* séparateurs de dates */
+  function dayLabel(ts) {
+    var d = new Date(ts), n = new Date(), a = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(), b = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(), diff = Math.round((a - b) / 86400000);
+    if (diff === 0) return 'Aujourd\u2019hui'; if (diff === 1) return 'Hier';
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: d.getFullYear() === n.getFullYear() ? undefined : 'numeric' });
+  }
+  UX.decorate = function () {
+    $n('.uxday', thread).forEach(function (e) { e.remove(); });
+    var last = '';
+    $n(':scope > .msg', thread).forEach(function (el) {
+      var ts = +el.dataset.ts; if (!ts) return; var k = new Date(ts).toDateString();
+      if (k !== last) { var s = document.createElement('div'); s.className = 'uxday'; s.setAttribute('role', 'separator'); s.textContent = dayLabel(ts); el.before(s); last = k; }
+    });
+    var l = $n(':scope > .msg.ai', thread).pop(); $n('.msg.ai.last', thread).forEach(function (e) { e.classList.remove('last'); }); if (l) l.classList.add('last');
+  };
+  var _rt = renderThread;
+  renderThread = function () { _rt.apply(this, arguments); try { UX.decorate(); UX.home(); UX.refreshCrumb(); if (UX.selecting) UX.exitSelect(); } catch (e) { console.warn(e); } };
+
+  /* ---------- Expliquer cette réponse ---------- */
+  UX.explain = function (m) {
+    if (busy) return;
+    var mt = m.meta || {}, sum = null; try { sum = summarize(m.text.replace(/[#>*_`\[\]]/g, '')); } catch (e) {}
+    var brief = sum && sum.summary ? sum.summary.split(/(?<=[.!?…])\s+/).slice(0, 2).join(' ') : String(m.text).replace(/[#>*_`]/g, '').split(/(?<=[.!?…])\s+/).slice(0, 2).join(' ');
+    var lines = ['### Comment j\u2019ai produit cette réponse', '', '- **Moteur** : ' + (mt.engine || '-'), '- **Pourquoi** : ' + UX.reason(mt)];
+    if (typeof mt.score === 'number' && !/^LLM/.test(mt.engine || '')) lines.push('- **' + (mt.nn ? 'Score PYNet' : 'Similarité') + '** : ' + UX.pct(mt.score) + (mt.nn ? ' (' + UX.level(mt.score).t.toLowerCase() + ', un score cosinus n\u2019est pas une probabilité)' : ''));
+    if (mt.ms != null) lines.push('- **Durée** : ' + UX.fmtMs(mt.ms));
+    if (/Markov/.test(mt.engine || '')) lines.push('- **À savoir** : un texte Markov est généré mot à mot à partir de probabilités ; il peut sembler fluide sans être exact.');
+    if (brief) lines.push('', '### En bref', '', brief.length > 420 ? brief.slice(0, 420) + '…' : brief);
+    if (sum && sum.keywords && sum.keywords.length) lines.push('', '**Notions clés** : ' + sum.keywords.slice(0, 6).join(', '));
+    var em = { role: 'assistant', text: lines.join('\n'), ts: Date.now(), meta: { model: model.name, engine: 'Explication', score: 1, ms: 0 } };
+    active.messages.push(em); persist(); thread.appendChild(bubble(em)); UX.decorate(); scroll.scrollTop = scroll.scrollHeight;
+    UX.announce('Explication ajoutée');
+  };
+
+  /* ---------- sélection multiple ---------- */
+  var selBar = document.createElement('div'); selBar.id = 'uxSelBar'; selBar.setAttribute('role', 'toolbar'); selBar.setAttribute('aria-label', 'Actions sur la sélection');
+  selBar.innerHTML = '<span class="n" id="uxSelN">0 sélectionné</span><button class="uxbtn" data-a="all">Tout</button><button class="uxbtn" data-a="copy">Copier</button><button class="uxbtn" data-a="export">Exporter .md</button><button class="uxbtn danger" data-a="del">Supprimer</button><button class="uxbtn" data-a="cancel">Terminer</button>';
+  $1('.composer .cwrap').prepend(selBar);
+  function selected() { return $n(':scope > .msg.sel', thread).map(function (e) { return e.__m; }).filter(Boolean); }
+  function asMd(list) { return list.map(function (m) { return '**' + (m.role === 'user' ? 'Moi' : 'PYchat') + '**' + (m.ts ? ' (' + fmtFull(m.ts) + ')' : '') + ' :\n\n' + m.text; }).join('\n\n---\n\n'); }
+  UX.updateSel = function () { var n = selected().length; $1('#uxSelN').textContent = n + ' sélectionné' + (n > 1 ? 's' : ''); $n('#uxSelBar [data-a=copy],#uxSelBar [data-a=export],#uxSelBar [data-a=del]').forEach(function (b) { b.disabled = !n; }); };
+  UX.enterSelect = function () { if (!active.messages.length) return UX.toast('Aucun message à sélectionner'); UX.selecting = true; document.body.classList.add('selecting'); UX.updateSel(); UX.announce('Mode sélection. Clique sur les messages à sélectionner.'); setTimeout(function () { var b = $1('#uxSelBar [data-a=all]'); b && b.focus(); }, 20); };
+  UX.exitSelect = function () { UX.selecting = false; document.body.classList.remove('selecting'); $n('.msg.sel', thread).forEach(function (e) { e.classList.remove('sel'); var c = $1('.uxselbox input', e); if (c) c.checked = false; }); };
+  var lastClicked = null;
+  thread.addEventListener('click', function (e) {
+    if (!UX.selecting) return; var el = e.target.closest('.msg'); if (!el || e.target.closest('button,a,input,summary')) { if (e.target.matches('.uxselbox input')) lastClicked = el; return; }
+    var all = $n(':scope > .msg', thread);
+    if (e.shiftKey && lastClicked) { var a = all.indexOf(lastClicked), b = all.indexOf(el); all.slice(Math.min(a, b), Math.max(a, b) + 1).forEach(function (x) { x.classList.add('sel'); $1('.uxselbox input', x).checked = true; }); }
+    else { var on = !el.classList.contains('sel'); el.classList.toggle('sel', on); $1('.uxselbox input', el).checked = on; lastClicked = el; }
+    UX.updateSel();
+  });
+  selBar.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'), list = selected();
+    if (a === 'all') { $n(':scope > .msg', thread).forEach(function (x) { x.classList.add('sel'); $1('.uxselbox input', x).checked = true; }); UX.updateSel(); }
+    else if (a === 'copy') { UX.copy(asMd(list)); UX.toast(list.length + ' message(s) copiés'); }
+    else if (a === 'export') { UX.download('pychat-selection.md', '# ' + (active.title || 'PYchat') + '\n\n' + asMd(list), 'text/markdown'); }
+    else if (a === 'del') {
+      var before = active.messages.slice(), c = active;
+      active.messages = active.messages.filter(function (m) { return list.indexOf(m) < 0; }); persist(); UX.exitSelect(); renderThread();
+      UX.toast(list.length + ' message(s) supprimés', { action: { label: 'Annuler', fn: function () { c.messages = before; persist(); if (active === c) renderThread(); } } });
+    }
+    else if (a === 'cancel') UX.exitSelect();
+  });
+
+  /* ================================================================== */
+  /* HISTORIQUE : recherche plein texte, épinglées, tags, menu, corbeille  */
+  /* ================================================================== */
+  function groupOf(ts) {
+    var d = new Date(ts || 0), n = new Date(), a = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime(), diff = Math.floor((a - new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) / 86400000);
+    return diff <= 0 ? 'Aujourd\u2019hui' : diff === 1 ? 'Hier' : diff <= 7 ? '7 derniers jours' : diff <= 30 ? '30 derniers jours' : 'Plus ancien';
+  }
+  function hl(text, q) {
+    if (!q) return esc(text); var f = fold(text), i = f.indexOf(q); if (i < 0) return esc(text);
+    return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+  function snippet(text, q) {
+    var t = String(text).replace(/[#*_`>]+/g, '').replace(/\s+/g, ' '), f = fold(t), i = f.indexOf(q); if (i < 0) return null;
+    var a = Math.max(0, i - 24), s = (a ? '…' : '') + t.slice(a, i + q.length + 40) + (i + q.length + 40 < t.length ? '…' : ''); return s;
+  }
+  UX.allTags = function () { var o = {}; convs.forEach(function (c) { (c.tags || []).forEach(function (t) { o[t] = (o[t] || 0) + 1; }); }); return Object.keys(o).sort(); };
+
+  var tagBar = document.createElement('div'); tagBar.id = 'uxTagBar'; tagBar.setAttribute('role', 'group'); tagBar.setAttribute('aria-label', 'Filtrer par tag');
+  $1('.hist').prepend(tagBar);
+  function renderTagBar() {
+    var tags = UX.allTags(); tagBar.classList.toggle('on', tags.length > 0);
+    if (UX.tagFilter && tags.indexOf(UX.tagFilter) < 0) UX.tagFilter = '';
+    tagBar.innerHTML = tags.length ? '<button class="uxtag" aria-pressed="' + (!UX.tagFilter) + '" data-t="">Toutes</button>' + tags.map(function (t) { return '<button class="uxtag" aria-pressed="' + (UX.tagFilter === t) + '" data-t="' + esc(t) + '"># ' + esc(t) + '</button>'; }).join('') : '';
+  }
+  tagBar.addEventListener('click', function (e) { var b = e.target.closest('[data-t]'); if (!b) return; UX.tagFilter = b.getAttribute('data-t'); renderConvs(); });
+
+  function openConv(c) { active = c; renderConvs(); renderThread(); if (window.PYLAB) PYLAB.close(); if (innerWidth <= 820) document.body.classList.add('collapsed'); }
+  UX.openConv = openConv;
+
+  renderConvs = function () {
+    renderTagBar();
+    var raw = ($1('#search').value || '').trim(), q = fold(raw), list = $1('#convList'); list.innerHTML = '';
+    list.setAttribute('role', 'list');
+    var snip = {};
+    var arr = convs.filter(function (c) {
+      if (UX.tagFilter && (c.tags || []).indexOf(UX.tagFilter) < 0) return false;
+      if (!q) return true; if (fold(c.title).indexOf(q) >= 0) return true;
+      for (var i = 0; i < (c.messages || []).length; i++) { var s = snippet(c.messages[i].text || '', q); if (s) { snip[c.id] = s; return true; } }
+      return false;
+    }).sort(function (a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || (b.updated || 0) - (a.updated || 0); });
+    if (!arr.length) list.innerHTML = '<div class="note" style="padding:8px 12px;font-size:12.5px;color:var(--muted)">' + (q ? 'Aucun résultat pour « ' + esc(raw) + ' ».' : 'Aucune discussion.') + '</div>';
+    var last = '';
+    arr.forEach(function (c) {
+      var g = c.pinned ? 'Épinglées' : groupOf(c.updated);
+      if (g !== last) { var h = document.createElement('h4'); h.className = 'grp'; h.textContent = g; list.appendChild(h); last = g; }
+      var d = document.createElement('div'); d.className = 'conv' + (active && c.id === active.id ? ' active' : ''); d.setAttribute('role', 'listitem');
+      var ct = document.createElement('div'); ct.className = 'ct'; ct.tabIndex = 0; ct.setAttribute('role', 'button');
+      if (active && c.id === active.id) ct.setAttribute('aria-current', 'true');
+      ct.innerHTML = '<span class="tt">' + hl(c.title, q) + '</span>' + (snip[c.id] ? '<span class="sn">' + hl(snip[c.id], q) + '</span>' : '') + ((c.tags || []).length ? '<span class="tg">' + c.tags.map(function (t) { return '# ' + esc(t); }).join(' ') + '</span>' : '');
+      ct.title = c.title + ' - ' + (c.messages || []).length + ' message(s) · double-clic pour renommer';
+      ct.onclick = function () { openConv(c); if (q && snip[c.id]) UX.jumpTo(c, q); };
+      ct.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ct.click(); } else if (e.key === 'F2') { e.preventDefault(); rename(c, d, ct); } else if (e.key === 'Delete') { e.preventDefault(); UX.deleteConv(c); } };
+      ct.ondblclick = function (e) { e.stopPropagation(); rename(c, d, ct); };
+      var pin = document.createElement('button'); pin.className = 'cb' + (c.pinned ? ' pinned' : ''); pin.innerHTML = IC.pin; pin.setAttribute('aria-label', c.pinned ? 'Désépingler' : 'Épingler'); pin.title = pin.getAttribute('aria-label'); pin.setAttribute('aria-pressed', !!c.pinned);
+      pin.onclick = function (e) { e.stopPropagation(); UX.togglePin(c); };
+      var mo = document.createElement('button'); mo.className = 'cb'; mo.innerHTML = IC.more; mo.setAttribute('aria-label', 'Actions pour « ' + c.title + ' »'); mo.title = 'Actions'; mo.setAttribute('aria-haspopup', 'menu'); mo.setAttribute('aria-expanded', 'false');
+      mo.onclick = function (e) { e.stopPropagation(); convMenu(mo, c, d, ct); };
+      d.appendChild(ct); d.appendChild(pin); d.appendChild(mo); list.appendChild(d);
+    });
+    var tr = UX.trash(); if (tr.length) { var tl = document.createElement('button'); tl.className = 'uxtrashlink'; tl.innerHTML = IC.trash + 'Corbeille (' + tr.length + ')'; tl.onclick = UX.openTrash; list.appendChild(tl); }
+    UX.refreshCrumb && UX.refreshCrumb();
+  };
+  $1('#search').oninput = function () { renderConvs(); };
+  $1('#search').onkeydown = function (e) { if (e.key === 'Escape' && this.value) { e.stopPropagation(); this.value = ''; renderConvs(); } else if (e.key === 'ArrowDown') { var f = $1('#convList .ct'); if (f) { e.preventDefault(); f.focus(); } } };
+
+  UX.jumpTo = function (c, q, idx) {
+    setTimeout(function () {
+      var els = $n(':scope > .msg', thread), target = null;
+      if (idx != null) target = els[idx]; else target = els.filter(function (e) { return e.__m && fold(e.__m.text).indexOf(q) >= 0; })[0];
+      if (target) { target.scrollIntoView({ block: 'center', behavior: UX.reduced() ? 'auto' : 'smooth' }); target.classList.remove('uxflash'); void target.offsetWidth; target.classList.add('uxflash'); }
+    }, 60);
+  };
+  function rename(c, d, ct) {
+    var inp = document.createElement('input'); inp.className = 'ren'; inp.value = c.title; inp.setAttribute('aria-label', 'Nouveau titre'); d.replaceChild(inp, ct); inp.focus(); inp.select();
+    var done = function (ok) { if (done.x) return; done.x = 1; if (ok && inp.value.trim()) { c.title = inp.value.trim().slice(0, 60); persist(); } renderConvs(); };
+    inp.onkeydown = function (ev) { ev.stopPropagation(); if (ev.key === 'Enter') done(true); else if (ev.key === 'Escape') done(false); }; inp.onblur = function () { done(true); }; inp.onclick = function (ev) { ev.stopPropagation(); };
+  }
+  UX.togglePin = function (c) { c.pinned = !c.pinned; persist(); renderConvs(); UX.toast(c.pinned ? 'Discussion épinglée' : 'Discussion désépinglée'); };
+  function convMenu(btn, c, d, ct) {
+    var el = UX.popover(btn, '<button class="it" role="menuitem" data-a="ren">Renommer<small>F2</small></button><button class="it" role="menuitem" data-a="pin">' + (c.pinned ? 'Désépingler' : 'Épingler') + '</button><button class="it" role="menuitem" data-a="tag">Tags…</button><button class="it" role="menuitem" data-a="exp">Exporter (.md)</button><hr><button class="it danger" role="menuitem" data-a="del">Supprimer<small>Suppr</small></button>', { role: 'menu', label: 'Actions de la discussion' });
+    if (!el) return;
+    el.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'); UX.closePop();
+      if (a === 'ren') rename(c, d, ct); else if (a === 'pin') UX.togglePin(c); else if (a === 'tag') tagEditor(btn, c);
+      else if (a === 'exp') UX.download('pychat-' + fold(c.title).replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '.md', '# ' + c.title + '\n\n' + asMd(c.messages || []), 'text/markdown');
+      else if (a === 'del') UX.deleteConv(c);
+    });
+  }
+  function tagEditor(anchor, c) {
+    var all = UX.allTags();
+    var el = UX.popover(anchor, '<h5>Tags de la discussion</h5><div style="display:flex;flex-wrap:wrap;gap:4px;padding:4px 10px" id="uxTE">' + all.map(function (t) { return '<button class="uxtag" aria-pressed="' + ((c.tags || []).indexOf(t) >= 0) + '" data-t="' + esc(t) + '"># ' + esc(t) + '</button>'; }).join('') + '</div><div style="padding:6px 10px 8px"><input id="uxTagIn" data-autofocus placeholder="Nouveau tag puis Entrée" aria-label="Nouveau tag" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--bg);color:var(--fg);font-size:13px"></div>', { role: 'dialog', label: 'Tags', force: true });
+    if (!el) return;
+    function setT(t, on) { c.tags = c.tags || []; var i = c.tags.indexOf(t); if (on && i < 0) c.tags.push(t); if (!on && i >= 0) c.tags.splice(i, 1); persist(); renderConvs(); }
+    $1('#uxTE', el).addEventListener('click', function (e) { var b = e.target.closest('[data-t]'); if (!b) return; var on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); setT(b.getAttribute('data-t'), on); });
+    $1('#uxTagIn', el).addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return; e.preventDefault(); var t = this.value.trim().toLowerCase().replace(/^#/, '').replace(/\s+/g, '-').slice(0, 20); if (!t) return;
+      setT(t, true); this.value = ''; var bx = $1('#uxTE', el); if (!bx.querySelector('[data-t="' + t + '"]')) bx.insertAdjacentHTML('beforeend', '<button class="uxtag" aria-pressed="true" data-t="' + esc(t) + '"># ' + esc(t) + '</button>');
+    });
+  }
+
+  /* corbeille (30 jours) */
+  function TK() { return K('trash'); }
+  UX.trash = function () { try { var a = JSON.parse(localStorage.getItem(TK()) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+  UX.saveTrash = function (a) { try { localStorage.setItem(TK(), JSON.stringify(a)); } catch (e) { UX.toast('Stockage plein : vide la corbeille'); } };
+  UX.purgeTrash = function () { var lim = Date.now() - (S.trashDays || 30) * 86400000, a = UX.trash(), b = a.filter(function (x) { return x.at > lim; }); if (b.length !== a.length) UX.saveTrash(b); };
+  UX.deleteConv = function (c) {
+    var idx = convs.indexOf(c); if (idx < 0) return;
+    convs.splice(idx, 1); var tr = UX.trash(); tr.unshift({ c: c, at: Date.now(), idx: idx }); UX.saveTrash(tr);
+    if (!convs.length) newChat(); else { if (active.id === c.id) active = convs[0]; persist(); renderConvs(); renderThread(); }
+    UX.toast('« ' + (c.title.length > 32 ? c.title.slice(0, 32) + '…' : c.title) + ' » placée dans la corbeille', { action: { label: 'Annuler', fn: function () { UX.restore(c.id); } } });
+  };
+  UX.restore = function (id) {
+    var tr = UX.trash(), i = tr.findIndex(function (x) { return x.c.id === id; }); if (i < 0) return;
+    var it = tr.splice(i, 1)[0]; UX.saveTrash(tr);
+    if (convs.length === 1 && !convs[0].messages.length && convs[0] !== it.c) convs.splice(0, 1);
+    convs.splice(Math.min(it.idx || 0, convs.length), 0, it.c); active = it.c; persist(); renderConvs(); renderThread();
+    UX.toast('Discussion restaurée');
+  };
+  UX.openTrash = function () {
+    var tr = UX.trash();
+    var body = tr.length ? tr.map(function (x) { var days = Math.max(0, (S.trashDays || 30) - Math.floor((Date.now() - x.at) / 86400000)); return '<div class="uxrow"><div class="grow"><b>' + esc(x.c.title) + '</b><small>' + (x.c.messages || []).length + ' message(s) · supprimée le ' + new Date(x.at).toLocaleDateString('fr-FR') + ' · effacement dans ' + days + ' j</small></div><button class="uxbtn" data-r="' + esc(x.c.id) + '">Restaurer</button><button class="uxbtn danger" data-d="' + esc(x.c.id) + '">Supprimer</button></div>'; }).join('') : '<div class="uxempty">La corbeille est vide.</div>';
+    var md2 = UX.modal('Corbeille', '<p class="uxhelp">Les discussions supprimées sont conservées ' + (S.trashDays || 30) + ' jours puis effacées automatiquement.</p>' + body, tr.length ? '<button class="uxbtn danger" data-empty>Vider la corbeille</button><button class="uxbtn pri" data-close2>Fermer</button>' : '<button class="uxbtn pri" data-close2>Fermer</button>');
+    md2.el.addEventListener('click', function (e) {
+      var r = e.target.closest('[data-r]'), d = e.target.closest('[data-d]');
+      if (r) { UX.restore(r.getAttribute('data-r')); md2.close(); }
+      else if (d) { var id = d.getAttribute('data-d'); UX.saveTrash(UX.trash().filter(function (x) { return x.c.id !== id; })); md2.close(); renderConvs(); UX.openTrash(); }
+      else if (e.target.closest('[data-empty]')) { if (confirm('Vider définitivement la corbeille ? Cette action est irréversible.')) { UX.saveTrash([]); md2.close(); renderConvs(); UX.toast('Corbeille vidée'); } }
+      else if (e.target.closest('[data-close2]')) md2.close();
+    });
+  };
+})();
+</script>
+
+<script>
+/* ===== PYchat 3.6 : couche UX (partie 3 : paramètres, accueil, commandes, visite, voix, démarrage) ===== */
+(function () {
+  'use strict';
+  var UX = window.UX36, esc = UX.esc, fold = UX.fold, FL = UX.flags;
+  var $1 = function (s, r) { return (r || document).querySelector(s); };
+  var $n = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var ov = $1('#settingsOverlay'), inner = $1('#settingsOverlay .inner');
+
+  /* ================================================================== */
+  /* PARAMÈTRES EN ONGLETS                                               */
+  /* ================================================================== */
+  var TABS = [['apparence', 'Apparence'], ['conversation', 'Conversation'], ['moteur', 'Moteur IA'], ['avance', 'Avancé']];
+  var h2 = $1('h2', inner); h2.innerHTML = 'Paramètres<span class="crumb" id="uxSetCrumb"></span>';
+  var tl = document.createElement('div'); tl.className = 'uxtabs'; tl.setAttribute('role', 'tablist'); tl.setAttribute('aria-label', 'Catégories de paramètres');
+  var panels = {};
+  TABS.forEach(function (t, i) {
+    var b = document.createElement('button'); b.className = 'uxtab'; b.id = 'uxTab-' + t[0]; b.setAttribute('role', 'tab'); b.setAttribute('aria-controls', 'uxPanel-' + t[0]); b.textContent = t[1]; b.dataset.tab = t[0];
+    tl.appendChild(b);
+    var p = document.createElement('div'); p.className = 'uxpanel'; p.id = 'uxPanel-' + t[0]; p.setAttribute('role', 'tabpanel'); p.setAttribute('aria-labelledby', b.id); p.tabIndex = 0; panels[t[0]] = p;
+  });
+  h2.after(tl); var anchor = tl; TABS.forEach(function (t) { anchor.after(panels[t[0]]); anchor = panels[t[0]]; });
+
+  function card(title, html, cls) { var c = document.createElement('div'); c.className = 'card' + (cls ? ' ' + cls : ''); c.innerHTML = '<h3>' + esc(title) + '</h3>' + html; return c; }
+  function row(lbl, sub, ctrl, tag) { tag = tag || 'label'; return '<' + tag + ' class="row"><span>' + lbl + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + ctrl + '</' + tag + '>'; }
+  var chk = function (id, tip) { return '<input type="checkbox" id="' + id + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '>'; };
+
+  /* nouvelles cartes */
+  panels.apparence.appendChild(card('Affichage',
+    row('Mode compact', 'Espacements réduits, plus de messages à l\u2019écran', chk('ux_compact')) +
+    row('Mode concentration', 'Masque la barre latérale et l\u2019en-tête · Ctrl+Maj+F', chk('ux_focus')) +
+    row('Masquer les fonctions expérimentales', 'Neural Lab, mode réflexion, comparaison', chk('ux_hideExp')) +
+    row('Plein écran', 'Touche Échap pour sortir', '<button class="pill" id="ux_full" type="button">Activer</button>', 'div')));
+  var engCard = card('Choix du moteur',
+    row('Moteur utilisé', 'Automatique : Q/R, puis PYNet, puis Markov (et Ollama si activé)', '<select class="cfg" id="ux_engine" style="width:160px"><option value="auto">Automatique</option><option value="markov">Markov FR</option><option value="pynet">PYNet</option><option value="ollama">Ollama</option></select>') +
+    row('Comparer Markov et PYNet', 'Affiche les deux réponses côte à côte, tu choisis la meilleure', chk('ux_compare')) +
+    row('Jauge de confiance PYNet', 'Trois niveaux verbaux, le score exact au survol', chk('ux_gauge')));
+  panels.moteur.appendChild(engCard);
+  engCard.querySelector('#ux_compare').closest('.row').classList.add('uxexp');
+
+  panels.avance.appendChild(card('Expérience',
+    row('Mode simple', 'Masque les réglages techniques et le Lab', chk('ux_simple')) +
+    row('Visite guidée', '4 étapes, moins d\u2019une minute', '<button class="pill" id="ux_tour" type="button">Lancer</button>', 'div') +
+    row('Réinitialiser la première utilisation', 'Remet l\u2019accueil, la visite et les astuces à zéro (tes discussions sont conservées)', '<button class="pill" id="ux_reset" type="button">Réinitialiser</button>', 'div')));
+  panels.avance.appendChild(card('Configuration', '<p class="uxhelp" id="uxCkTxt"></p><div class="uxprog" aria-hidden="true"><i id="uxCkBar"></i></div><ul class="uxcheck" id="uxCheck"></ul>'));
+  panels.avance.appendChild(card('Préférences',
+    row('Exporter mes réglages', 'Fichier .json, pour une autre machine', '<button class="pill" id="ux_cfgExp" type="button">Exporter</button>', 'div') +
+    row('Importer des réglages', 'Fichier .json exporté depuis PYchat', '<button class="pill" id="ux_cfgImp" type="button">Importer</button><input type="file" id="ux_cfgFile" accept=".json,application/json" hidden>', 'div') +
+    row('Corbeille', 'Discussions supprimées, gardées 30 jours', '<button class="pill" id="ux_trash" type="button">Ouvrir</button>', 'div')));
+
+  /* répartition des cartes d'origine */
+  var MAP = { 'Interface': 'apparence', 'Suggestions fantômes': 'conversation', 'Voix': 'conversation', 'Conversation': 'conversation', 'Moteur de réponse': 'moteur', 'Neural Lab · PYNet': 'moteur', 'IA locale avancée (optionnel)': 'moteur', 'Données': 'avance' };
+  $n(':scope > .card', inner).forEach(function (c) {
+    var t = ($1('h3', c) || {}).textContent || '', tab = MAP[t.trim()] || 'avance', p = panels[tab];
+    if (tab === 'apparence' && t === 'Interface') p.insertBefore(c, p.firstChild);
+    else if (t === 'Moteur de réponse') p.insertBefore(c, engCard.nextSibling);
+    else p.appendChild(c);
+    if (t === 'Moteur de réponse') {
+      var det = document.createElement('details'); det.className = 'uxadv uxadvonly'; det.innerHTML = '<summary>Réglages avancés Markov</summary>';
+      ['#s_len', '#s_ord', '#s_crea'].forEach(function (id) { var r = $1(id, c); r = r && r.closest('.row'); if (r) det.appendChild(r); });
+      c.appendChild(det);
+      var ty = $1('#s_type', c); if (ty) { var sp = ty.closest('.row').querySelector('span'); sp.innerHTML = 'Affichage progressif<small>Révèle les longues réponses paragraphe par paragraphe</small>'; }
+    }
+    if (/Neural Lab/.test(t)) c.classList.add('uxadvonly');
+    if (t === 'Voix') c.insertAdjacentHTML('beforeend', row('Voix', 'Les voix « en ligne » envoient le texte au fournisseur du navigateur', '<select class="cfg uxsel2" id="ux_vvoice" style="width:200px"></select>') + row('Langue de la voix', 'Synthèse et reconnaissance vocale', langSel('ux_vlang')));
+    if (/IA locale/.test(t)) {
+      c.insertAdjacentHTML('beforeend', '<div class="uxguide" id="uxOllamaGuide" aria-live="polite"></div>');
+      var sl = $1('#s_llm', c); if (sl) sl.addEventListener('change', function () { UX.checkOllama(); });
+      ['#s_llmUrl', '#s_llmModel'].forEach(function (id) { var e = $1(id, c); if (e) e.addEventListener('change', function () { setTimeout(UX.checkOllama, 50); }); });
+    }
+  });
+  function langSel(id) { return '<select class="cfg uxsel2" id="' + id + '" style="width:150px"><option value="fr-FR">Français</option><option value="en-US">Anglais (US)</option><option value="es-ES">Espagnol</option><option value="de-DE">Allemand</option><option value="it-IT">Italien</option></select>'; }
+
+  var curTab = 'apparence';
+  function selectTab(name, focus) {
+    curTab = name;
+    $n('.uxtab', tl).forEach(function (b) { var on = b.dataset.tab === name; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
+    TABS.forEach(function (t) { panels[t[0]].hidden = t[0] !== name; });
+    var lbl = TABS.filter(function (t) { return t[0] === name; })[0][1];
+    $1('#uxSetCrumb').textContent = '› ' + lbl;
+    if (name === 'avance') UX.renderChecklist();
+    if (name === 'moteur') UX.renderGuide();
+  }
+  tl.addEventListener('click', function (e) { var b = e.target.closest('.uxtab'); if (b) selectTab(b.dataset.tab); });
+  tl.addEventListener('keydown', function (e) {
+    var bs = $n('.uxtab', tl), i = bs.indexOf(document.activeElement); if (i < 0) return;
+    var j = e.key === 'ArrowRight' ? (i + 1) % bs.length : e.key === 'ArrowLeft' ? (i - 1 + bs.length) % bs.length : e.key === 'Home' ? 0 : e.key === 'End' ? bs.length - 1 : -1;
+    if (j >= 0) { e.preventDefault(); selectTab(bs[j].dataset.tab, true); }
+  });
+  ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'uxSetH2'); h2.id = 'uxSetH2';
+
+  UX.openSettings = function (tab, focusSel) {
+    if (window.PYLAB && PYLAB.isOpen && PYLAB.isOpen()) {}
+    ov.classList.add('on'); UX.syncControls(); selectTab(tab || curTab);
+    setTimeout(function () {
+      var f = focusSel && $1(focusSel); if (f) { f.scrollIntoView({ block: 'center' }); if (f.focus) { if (!f.tabIndex || f.tabIndex < 0) f.tabIndex = -1; f.focus(); } f.classList.remove('uxflash'); void f.offsetWidth; f.classList.add('uxflash'); }
+      else { var t = $1('.uxtab[aria-selected=true]', tl); t && t.focus(); }
+    }, 40);
+  };
+  UX.closeSettings = function () { ov.classList.remove('on'); var b = $1('#openSettings'); b && b.focus(); };
+  $1('#openSettings').onclick = function () { UX.openSettings(); };
+  $1('#settingsClose').onclick = UX.closeSettings;
+  ov.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !e.defaultPrevented) { e.preventDefault(); UX.closeSettings(); } });
+
+  /* liaison des nouveaux contrôles */
+  function bindC(id, key, after) {
+    var el = $1('#' + id); if (!el) return;
+    el.onchange = function () { S[key] = el.type === 'checkbox' ? el.checked : el.value; saveS(); applyS(); after && after(); };
+  }
+  bindC('ux_compact', 'compact'); bindC('ux_hideExp', 'hideExp', function () { renderThread(); });
+  bindC('ux_focus', 'focus'); bindC('ux_gauge', 'gauge', function () { renderThread(); });
+  bindC('ux_compare', 'compare', function () { UX.refreshStatus(); });
+  bindC('ux_simple', 'simple', function () { renderThread(); UX.toast(S.simple ? 'Mode simple activé' : 'Fonctions avancées affichées'); });
+  $1('#ux_engine').onchange = function () { UX.setEngine(this.value); };
+  bindC('ux_vlang', 'vlang', function () { fillVoices(); FL.cfgVoice = true; UX.saveFlags(); });
+  bindC('ux_vvoice', 'vvoice', function () { FL.cfgVoice = true; UX.saveFlags(); });
+  $1('#ux_full').onclick = function () { UX.toggleFull(); };
+  document.addEventListener('fullscreenchange', function () { $1('#ux_full').textContent = document.fullscreenElement ? 'Quitter' : 'Activer'; });
+  $1('#ux_tour').onclick = function () { UX.closeSettings(); setTimeout(UX.tour, 150); };
+  $1('#ux_trash').onclick = function () { UX.openTrash(); };
+  $1('#ux_reset').onclick = function () {
+    Object.keys(FL).forEach(function (k) { delete FL[k]; }); UX.saveFlags(); S.simple = true; saveS(); applyS();
+    newChat(); UX.closeSettings(); UX.toast('Première utilisation réinitialisée'); setTimeout(UX.tour, 400);
+  };
+  UX.syncControls = function () {
+    var set = function (id, v) { var e = $1('#' + id); if (!e) return; if (e.type === 'checkbox') e.checked = !!v; else e.value = v; };
+    set('ux_compact', S.compact); set('ux_focus', S.focus); set('ux_hideExp', S.hideExp); set('ux_gauge', S.gauge !== false);
+    set('ux_compare', S.compare); set('ux_simple', S.simple); set('ux_engine', S.engine || 'auto'); set('ux_vlang', S.vlang || 'fr-FR');
+    fillVoices(); if (window.__syncExtra) window.__syncExtra();
+  };
+
+  /* préférences : export / import */
+  var PREF_KEYS = function () { return Object.keys(DEF).concat(['simple']); };
+  $1('#ux_cfgExp').onclick = function () {
+    var o = {}; PREF_KEYS().forEach(function (k) { if (S[k] !== undefined) o[k] = S[k]; });
+    UX.download('pychat-reglages.json', JSON.stringify({ app: 'PYchat', schemaVersion: 1, exported: new Date().toISOString(), settings: o }, null, 2), 'application/json');
+  };
+  $1('#ux_cfgImp').onclick = function () { $1('#ux_cfgFile').click(); };
+  $1('#ux_cfgFile').onchange = function () {
+    var f = this.files[0]; this.value = ''; if (!f) return;
+    f.text().then(function (t) {
+      var j = JSON.parse(t), src = j && (j.settings || j), n = 0;
+      if (!src || typeof src !== 'object') throw new Error('format');
+      if (j.schemaVersion && j.schemaVersion > 1) UX.toast('Fichier d\u2019une version plus récente : import partiel');
+      PREF_KEYS().forEach(function (k) { if (k in src && (DEF[k] === undefined || typeof src[k] === typeof DEF[k])) { S[k] = src[k]; n++; } });
+      saveS();
+      ['collapse', 'anim', 'ghost', 'score', 'type', 'tts', 'vshort', 'enter', 'title', 'confirm', 'store'].forEach(function (k) { bind('#s_' + k, k, 'check'); });
+      ['font', 'width', 'gdelay', 'thr', 'len', 'ord', 'crea', 'rate'].forEach(function (k) { bind('#s_' + k, k); });
+      applyS(); UX.syncControls(); renderThread(); UX.refreshStatus(); if (S.llm) UX.checkOllama();
+      UX.toast(n + ' réglage(s) importé(s)');
+    }).catch(function () { UX.toast('Fichier de réglages illisible'); });
+  };
+
+  /* guide Ollama (3 états) */
+  function code(t) { return '<span class="uxcode"><code>' + esc(t) + '</code><button type="button" data-copy="' + esc(t) + '" aria-label="Copier la commande">Copier</button></span>'; }
+  UX.renderGuide = function () {
+    var g = $1('#uxOllamaGuide'); if (!g) return; var o = UX.ollama || {}, st = S.llm ? o.state : 'off', h = '';
+    var file = location.protocol === 'file:';
+    if (st === 'off') h = '<b>Ollama est optionnel.</b> PYchat fonctionne sans : Q/R, PYNet et Markov tournent dans ton navigateur. Active la case ci-dessus pour brancher un vrai modèle de langage.';
+    else if (st === 'checking' || st === 'unknown') h = 'Vérification de la connexion à Ollama…';
+    else if (st === 'ok') h = '<b>Ollama est connecté.</b> Modèles disponibles : ' + esc((o.models || []).slice(0, 6).join(', ') || '-') + '.';
+    else if (st === 'down') h = '<b>Ollama ne répond pas.</b><ol><li>Installe Ollama depuis <a href="https://ollama.com/download" target="_blank" rel="noopener">ollama.com/download</a>.</li><li>Lance le service : ' + code('ollama serve') + '</li><li>Vérifie l\u2019adresse ci-dessus (par défaut http://localhost:11434), puis clique sur Tester.</li></ol>';
+    else if (st === 'cors') h = '<b>Ollama tourne, mais refuse cette page.</b> C\u2019est une protection d\u2019origine (CORS)' + (file ? ', fréquente quand PYchat est ouvert comme fichier local' : '') + '.<ol><li>Autorise l\u2019origine : ' + code('OLLAMA_ORIGINS=* ollama serve') + '<br><small>Windows : ' + code('setx OLLAMA_ORIGINS "*"') + ' puis redémarre Ollama.</small></li>' + (file ? '<li>Ou sers PYchat en local : ' + code('python -m http.server 8000') + ' puis ouvre http://localhost:8000</li>' : '') + '<li>Sous Chrome récent, accepte la demande d\u2019accès au réseau local si elle apparaît.</li></ol>';
+    else if (st === 'nomodel') h = '<b>Ollama est joignable, mais le modèle « ' + esc(o.want || S.llmModel || 'llama3.2') + ' » est absent.</b><ol><li>Télécharge-le : ' + code('ollama pull ' + (S.llmModel || 'llama3.2')) + '</li>' + ((o.models || []).length ? '<li>Ou choisis un modèle installé : ' + o.models.slice(0, 6).map(function (m) { return '<button type="button" class="uxbtn" data-model="' + esc(m) + '">' + esc(m) + '</button>'; }).join(' ') + '</li>' : '') + '</ol>';
+    g.innerHTML = h + (S.llm && st !== 'ok' && st !== 'checking' ? '<div style="margin-top:8px"><button type="button" class="uxbtn" id="uxOlRetry">Revérifier</button></div>' : '');
+  };
+  inner.addEventListener('click', function (e) {
+    var c = e.target.closest('[data-copy]'); if (c) { UX.copy(c.getAttribute('data-copy')); c.textContent = 'Copié'; setTimeout(function () { c.textContent = 'Copier'; }, 1400); }
+    var m = e.target.closest('[data-model]'); if (m) { S.llmModel = m.getAttribute('data-model'); saveS(); var i = $1('#s_llmModel'); if (i) i.value = S.llmModel; UX.checkOllama(); }
+    if (e.target.closest('#uxOlRetry')) UX.checkOllama();
+  });
+
+  /* checklist de configuration */
+  UX.renderChecklist = function () {
+    var es = UX.engineState(), items = [
+      ['Choisir un thème', 'Clair, sombre ou automatique', FL.cfgTheme || S.theme !== 'auto', function () { selectTab('apparence'); setTimeout(function () { $1('#s_theme').focus(); }, 30); }],
+      ['Moteur Markov prêt', es.markovTxt, es.markov === 'ok', null],
+      ['Réseau PYNet entraîné', es.nnTxt, es.nn === 'ok', window.PYLAB ? function () { UX.closeSettings(); PYLAB.open('train'); } : null],
+      ['Régler la voix', 'Voix, langue et vitesse', !!FL.cfgVoice, function () { selectTab('conversation'); setTimeout(function () { $1('#ux_vvoice').focus(); }, 30); }],
+      ['Sauvegarde locale', S.store ? 'Activée dans ce navigateur' : 'Désactivée : l\u2019historique sera perdu', !!S.store, function () { selectTab('conversation'); setTimeout(function () { $1('#s_store').focus(); }, 30); }],
+      ['Ollama (optionnel)', es.olTxt, es.ol === 'ok', function () { selectTab('moteur'); UX.openSettings('moteur', '#uxOllamaGuide'); }]
+    ];
+    var done = items.filter(function (i) { return i[2]; }).length;
+    $1('#uxCkTxt').textContent = done + ' sur ' + items.length + ' étapes terminées' + (done === items.length ? ' · tout est prêt' : '');
+    $1('#uxCkBar').style.width = Math.round(done / items.length * 100) + '%';
+    var ul = $1('#uxCheck'); ul.innerHTML = '';
+    items.forEach(function (it) {
+      var li = document.createElement('li'); li.className = it[2] ? 'done' : '';
+      li.innerHTML = '<span class="ck" aria-hidden="true"></span><span class="lbl">' + esc(it[0]) + '<small>' + esc(it[1]) + '</small></span><span class="sr-only">' + (it[2] ? 'terminé' : 'à faire') + '</span>';
+      if (it[3] && !it[2]) { var b = document.createElement('button'); b.className = 'uxbtn'; b.textContent = 'Régler'; b.onclick = it[3]; li.appendChild(b); }
+      ul.appendChild(li);
+    });
+  };
+
+  /* ================================================================== */
+  /* VOIX : voix, langue, vitesse (barre rapide + paramètres)             */
+  /* ================================================================== */
+  function voices() { try { return speechSynthesis.getVoices() || []; } catch (e) { return []; } }
+  function fillVoices() {
+    var lang = (S.vlang || 'fr-FR').slice(0, 2), vs = voices().filter(function (v) { return (v.lang || '').toLowerCase().indexOf(lang) === 0; });
+    $n('#ux_vvoice, #uxVbVoice').forEach(function (sel) {
+      sel.innerHTML = '<option value="">Automatique</option>' + vs.map(function (v) { return '<option value="' + esc(v.name) + '">' + esc(v.name.replace(/Microsoft |Google /, '')) + (v.localService ? '' : ' (en ligne)') + '</option>'; }).join('');
+      sel.value = vs.some(function (v) { return v.name === S.vvoice; }) ? S.vvoice : '';
+    });
+    $n('#uxVbLang').forEach(function (s) { s.value = S.vlang || 'fr-FR'; });
+    $n('#uxVbRate').forEach(function (r) { r.value = S.rate || 100; r.nextElementSibling.textContent = (S.rate || 100) + ' %'; });
+  }
+  UX.fillVoices = fillVoices;
+  if ('speechSynthesis' in window) {
+    try { speechSynthesis.addEventListener('voiceschanged', fillVoices); } catch (e) {}
+    var _speak = speechSynthesis.speak.bind(speechSynthesis);
+    speechSynthesis.speak = function (u) {
+      try {
+        var vs = voices(), v = S.vvoice && vs.filter(function (x) { return x.name === S.vvoice; })[0];
+        if (!v && S.vlang && S.vlang !== 'fr-FR') v = vs.filter(function (x) { return (x.lang || '').indexOf(S.vlang.slice(0, 2)) === 0; })[0];
+        if (v) { u.voice = v; u.lang = v.lang; } else if (S.vlang) u.lang = S.vlang;
+      } catch (e) {}
+      return _speak(u);
+    };
+  }
+  try { if (SR && SR.prototype && SR.prototype.start) { var _st = SR.prototype.start; SR.prototype.start = function () { try { this.lang = S.vlang || 'fr-FR'; } catch (e) {} return _st.apply(this, arguments); }; } } catch (e) {}
+  var vo = $1('#voiceOverlay');
+  if (vo) {
+    var vb = document.createElement('div'); vb.className = 'uxvbar'; vb.setAttribute('role', 'group'); vb.setAttribute('aria-label', 'Réglages de la voix');
+    vb.innerHTML = '<label>Voix <select id="uxVbVoice"></select></label><label>Langue ' + langSel('uxVbLang').replace('class="cfg uxsel2" ', '').replace(' style="width:150px"', '') + '</label><label>Vitesse <input type="range" id="uxVbRate" min="60" max="160" step="5"><output>100 %</output></label>' +
+      ('SpeechRecognition' in window ? '' : (window.webkitSpeechRecognition ? '<small style="flex-basis:100%;text-align:center">Reconnaissance vocale fournie par le navigateur (traitée en ligne)</small>' : '<small style="flex-basis:100%;text-align:center">Ce navigateur ne propose pas la reconnaissance vocale : la synthèse reste disponible</small>'));
+    var vrow = $1('.vrow', vo); vrow ? vrow.after(vb) : vo.appendChild(vb);
+    $1('#uxVbVoice').onchange = function () { S.vvoice = this.value; FL.cfgVoice = true; UX.saveFlags(); saveS(); UX.syncControls(); };
+    $1('#uxVbLang').onchange = function () { S.vlang = this.value; S.vvoice = ''; FL.cfgVoice = true; UX.saveFlags(); saveS(); fillVoices(); UX.syncControls(); };
+    $1('#uxVbRate').oninput = function () { S.rate = +this.value; this.nextElementSibling.textContent = this.value + ' %'; saveS(); applyS(); var r = $1('#s_rate'); if (r) r.value = S.rate; };
+    new MutationObserver(function () { if (vo.classList.contains('on')) fillVoices(); }).observe(vo, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  /* ================================================================== */
+  /* ACCUEIL : exemples, modèles, capacités réelles                       */
+  /* ================================================================== */
+  var chipsBuilt = false;
+  function buildChips() {
+    var hc = $1('#homeChips');
+    if (hc) hc.innerHTML = '';
+    chipsBuilt = true;
+  }
+  UX.home = function () {
+    buildChips();
+    if (!document.body.classList.contains('home')) return;
+    var e = $1('.empty');
+    if (!e) return;
+    var sub = $1('.greet-sub', e);
+    if (sub) sub.textContent = '';
+    var caps = $1('.uxcaps', e);
+    if (caps) caps.remove();
+  };
+  setInterval(function () { if (document.body.classList.contains('home') && !document.hidden) UX.home(); }, 3000);
+
+  /* ================================================================== */
+  /* BARRE DE COMMANDE : commandes supplémentaires + recherche messages   */
+  /* ================================================================== */
+  function c(t, k, f, sub) { return { i: '', t: t, k: k || '', f: f, sub: sub }; }
+  window.PYUX = window.PYUX || {};
+  PYUX.extraCmds = function (q) {
+    var L = [
+      c('Moteur : Automatique', 'moteur', function () { UX.setEngine('auto'); }, S.engine === 'auto' ? 'actif' : ''),
+      c('Moteur : Markov FR', 'moteur', function () { UX.setEngine('markov'); }, S.engine === 'markov' ? 'actif' : ''),
+      c('Moteur : PYNet', 'moteur reseau', function () { UX.setEngine('pynet'); }, S.engine === 'pynet' ? 'actif' : ''),
+      c('Moteur : Ollama', 'moteur llm', function () { UX.setEngine('ollama'); }, S.engine === 'ollama' ? 'actif' : ''),
+      c('Comparer Markov et PYNet', '', function () { S.compare = !S.compare; saveS(); UX.syncControls(); UX.refreshStatus(); UX.toast(S.compare ? 'Comparaison activée' : 'Comparaison désactivée'); }, S.compare ? 'activé' : ''),
+      c('Mode concentration', 'Ctrl+Maj+F', UX.toggleFocus),
+      c('Plein écran', '', UX.toggleFull),
+      c('Mode compact', '', function () { S.compact = !S.compact; saveS(); applyS(); UX.syncControls(); }),
+      c('Changer de thème', 'Ctrl+Maj+L', UX.toggleTheme),
+      c('Sélectionner des messages', 'copier exporter supprimer', UX.enterSelect),
+      c('Visite guidée', '', UX.tour),
+      c('Corbeille', 'restaurer', UX.openTrash),
+      c('Raccourcis clavier', 'Ctrl+/', UX.shortcuts),
+      c('Épingler la discussion', '', function () { UX.togglePin(active); }),
+      c('Modèle : Brainstorming', '', function () { input.value = 'Donne-moi des idées sur : '; autosize(); input.focus(); }),
+      c('Modèle : Résumé', '', function () { input.value = 'Résume ce texte : '; autosize(); input.focus(); }),
+      c('Modèle : Traduction', '', function () { input.value = 'Traduis en anglais : '; autosize(); input.focus(); })
+    ];
+    TABS.forEach(function (t) { L.push(c('Paramètres › ' + t[1], 'Ctrl+,', function () { UX.openSettings(t[0]); })); });
+    L.push(c('Guide de connexion Ollama', '', function () { UX.openSettings('moteur', '#uxOllamaGuide'); }));
+    if (q && q.length >= 2) {
+      var n = 0;
+      convs.forEach(function (cv) {
+        (cv.messages || []).forEach(function (m, i) {
+          if (n >= 12) return; var t = String(m.text || '').replace(/[#*_`>]+/g, ''), f = fold(t), p = f.indexOf(q); if (p < 0) return; n++;
+          var a = Math.max(0, p - 20), sn = (a ? '…' : '') + t.slice(a, p + q.length + 40).replace(/\s+/g, ' ').trim();
+          L.push({ i: '', t: sn, k: 'message', sub: cv.title, always: true, f: function () { UX.openConv(cv); UX.jumpTo(cv, q, i); } });
+        });
+      });
+    }
+    return L;
+  };
+
+  /* ================================================================== */
+  /* RACCOURCIS + AIDE                                                   */
+  /* ================================================================== */
+  var SC = [['Ctrl+K', 'Barre de commande'], ['Ctrl+Maj+O', 'Nouvelle discussion'], ['Ctrl+B', 'Afficher / masquer l\u2019historique'], ['Ctrl+,', 'Paramètres'], ['Ctrl+Maj+F', 'Mode concentration'], ['Ctrl+Maj+L', 'Changer de thème'], ['Alt+L', 'Neural Lab'], ['Échap', 'Arrêter la génération, fermer'], ['Ctrl+Z', 'Annuler la dernière suppression'], ['F2 / Suppr', 'Renommer / supprimer (historique)'], ['Ctrl+/', 'Cette aide']];
+  UX.shortcuts = function () { UX.modal('Raccourcis clavier', '<div>' + SC.map(function (s) { return '<div class="uxrow"><div class="grow">' + esc(s[1]) + '</div><kbd>' + esc(s[0]) + '</kbd></div>'; }).join('') + '</div>'); };
+  document.addEventListener('keydown', function (e) {
+    var mod = e.ctrlKey || e.metaKey, k = (e.key || '').toLowerCase();
+    if (mod && !e.shiftKey && (k === ',' )) { e.preventDefault(); ov.classList.contains('on') ? UX.closeSettings() : UX.openSettings(); }
+    else if (mod && !e.shiftKey && (k === '/' || e.code === 'Slash')) { e.preventDefault(); UX.shortcuts(); }
+    else if (mod && e.shiftKey && k === 'f') { e.preventDefault(); UX.toggleFocus(); }
+    else if (mod && e.shiftKey && k === 'l') { e.preventDefault(); UX.toggleTheme(); }
+    else if (k === 'escape' && !e.defaultPrevented) {
+      if (UX.gen) { e.preventDefault(); UX.stopGen(); }
+      else if (UX.selecting) { e.preventDefault(); UX.exitSelect(); }
+      else if (S.focus && !$1('.uxmodal') && !ov.classList.contains('on') && !$1('#pal.on')) { UX.toggleFocus(); }
+    }
+  });
+
+  /* ================================================================== */
+  /* VISITE GUIDÉE (4 étapes)                                            */
+  /* ================================================================== */
+  var STEPS = [
+    ['.composer .box', 'Pose ta question', 'Écris ou dicte. Entrée envoie, Maj+Entrée ajoute une ligne. Pendant la réponse, Échap ou le bouton Arrêter l\u2019interrompt.'],
+    ['.sidebar', 'Tes discussions', 'La recherche fouille tout le contenu. Épingle, tague, renomme. Une suppression s\u2019annule pendant 8 secondes, puis la discussion reste 30 jours dans la corbeille.'],
+    ['#uxStatus', 'Le moteur, en clair', 'Cette pastille montre quel moteur répond et son état. Chaque réponse porte un badge : clique-le pour voir le chemin suivi et pourquoi.'],
+    ['#openSettings', 'Tout sous la main', 'Ctrl+K ouvre la barre de commande, Ctrl+, les paramètres et Ctrl+/ la liste des raccourcis.']
+  ];
+  UX.tour = function () {
+    if ($1('#uxTour')) return; ov.classList.remove('on');
+    var wasCollapsed = document.body.classList.contains('collapsed'), prev = document.activeElement, i = 0;
+    var t = document.createElement('div'); t.id = 'uxTour'; t.innerHTML = '<div class="hole"></div><div class="card" role="dialog" aria-modal="true" aria-labelledby="uxTourH" aria-describedby="uxTourP"><div class="st" id="uxTourSt"></div><h3 id="uxTourH"></h3><p id="uxTourP"></p><div class="row2"><span class="pips sp" aria-hidden="true"></span><button class="uxbtn" data-a="skip">Passer</button><button class="uxbtn" data-a="prev">Précédent</button><button class="uxbtn pri" data-a="next">Suivant</button></div></div>';
+    document.body.appendChild(t);
+    var hole = $1('.hole', t), cd = $1('.card', t);
+    function place() {
+      var s = STEPS[i], el = $1(s[0]);
+      if (s[0] === '.sidebar' && document.body.classList.contains('collapsed')) { document.body.classList.remove('collapsed'); }
+      $1('#uxTourSt').textContent = 'Étape ' + (i + 1) + ' sur ' + STEPS.length; $1('#uxTourH').textContent = s[1]; $1('#uxTourP').textContent = s[2];
+      $1('.pips', t).innerHTML = STEPS.map(function (_, j) { return '<i class="' + (j === i ? 'on' : '') + '"></i>'; }).join('');
+      $1('[data-a=prev]', t).disabled = i === 0; $1('[data-a=next]', t).textContent = i === STEPS.length - 1 ? 'Terminer' : 'Suivant';
+      var r = el && el.offsetParent !== null ? el.getBoundingClientRect() : { left: innerWidth / 2 - 20, top: innerHeight / 2 - 20, width: 40, height: 40, right: innerWidth / 2 + 20, bottom: innerHeight / 2 + 20 };
+      var pad = 6; hole.style.left = (r.left - pad) + 'px'; hole.style.top = (r.top - pad) + 'px'; hole.style.width = (r.width + pad * 2) + 'px'; hole.style.height = (r.height + pad * 2) + 'px';
+      var cw = Math.min(340, innerWidth - 24), chh = cd.offsetHeight || 190, x, y;
+      if (r.right + 16 + cw < innerWidth && r.width < innerWidth / 2) { x = r.right + 16; y = Math.max(12, Math.min(innerHeight - chh - 12, r.top)); }
+      else if (r.top - chh - 16 > 0) { x = Math.max(12, Math.min(innerWidth - cw - 12, r.left)); y = r.top - chh - 16; }
+      else { x = Math.max(12, Math.min(innerWidth - cw - 12, r.left)); y = Math.min(innerHeight - chh - 12, r.bottom + 16); }
+      cd.style.left = x + 'px'; cd.style.top = y + 'px';
+      $1('[data-a=next]', t).focus();
+    }
+    function end() { t.remove(); removeEventListener('resize', place); document.removeEventListener('keydown', key, true); FL.tour = true; UX.saveFlags(); if (wasCollapsed) document.body.classList.add('collapsed'); try { (prev && prev !== document.body ? prev : input).focus(); } catch (e) {} }
+    function key(e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); go(1); } else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      else if (e.key === 'Tab') { var f = $n('button:not(:disabled)', cd); var a = f[0], z = f[f.length - 1]; if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); } else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); } }
+    }
+    function go(d) { var j = i + d; if (j >= STEPS.length) return end(); if (j < 0) return; i = j; place(); }
+    t.addEventListener('click', function (e) { var b = e.target.closest('[data-a]'); if (!b) return; var a = b.getAttribute('data-a'); if (a === 'skip') end(); else go(a === 'next' ? 1 : -1); });
+    addEventListener('resize', place); document.addEventListener('keydown', key, true);
+    requestAnimationFrame(place);
+  };
+
+  /* ================================================================== */
+  /* DÉMARRAGE                                                           */
+  /* ================================================================== */
+  UX.afterBoot = function () {
+    try {
+      UX.fillDefaults(); applyS(); UX.purgeTrash(); renderConvs(); renderThread(); UX.refreshAcct(); UX.syncControls(); UX.refreshStatus();
+      if (S.llm) UX.checkOllama();
+      if (UX.tips) UX.tips();
+      
+    } catch (e) { console.warn('PYchat 3.6 afterBoot', e); }
+  };
+  var _boot = boot;
+  boot = function () { _boot.apply(this, arguments); UX.afterBoot(); };
+  if (typeof active !== 'undefined' && active) UX.afterBoot();
+})();
+</script>
+
+<!-- À PROPOS -->
+<div class="overlay settings" id="aboutOverlay">
+  <button class="close" id="aboutClose" aria-label="Fermer"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <div class="inner">
+    <h2>À propos de PYchat</h2>
+    <div class="card"><h3>Présentation</h3>
+      <p class="note">PYchat est une application de discussion locale, conçue pour fonctionner directement dans le navigateur. Elle combine plusieurs systèmes de réponse : une base de questions/réponses, un générateur Markov en français, un petit réseau de neurones nommé PYNet et, en option, un modèle de langage local via Ollama.</p>
+      <p class="note">L’objectif est de proposer un assistant simple, rapide et privé, sans compte obligatoire ni envoi automatique des conversations vers un serveur. Les discussions, réglages et données d’entraînement restent stockés dans le navigateur, sauf si tu actives explicitement Ollama ou exportes des fichiers.</p>
+    </div>
+    <div class="card"><h3>Version et auteur</h3>
+      <div class="row"><span>Version<small>Interface sobre et accueil simplifié</small></span><b>3.7 sobre</b></div>
+      <div class="row"><span>Base<small>Version d’origine</small></span><b>PYchat 3.6</b></div>
+      <div class="row"><span>Auteur<small>Créateur et responsable du projet</small></span><b>Gabriel LEGET</b></div>
+      <div class="row"><span>Langue principale<small>Interface et génération Markov</small></span><b>Français</b></div>
+      <div class="row"><span>Environnement<small>Application HTML autonome</small></span><b>Navigateur web</b></div>
+    </div>
+    <div class="card"><h3>Moteurs de réponse</h3>
+      <div class="row"><span>Questions / Réponses<small>Recherche de similarité dans une base de paires question-réponse</small></span><b>Q/R</b></div>
+      <div class="row"><span>Markov FR<small>Génération de texte à partir d’un corpus français, avec ordre de chaîne réglable</small></span><b>Markov</b></div>
+      <div class="row"><span>PYNet<small>Réseau de neurones léger entraîné dans le navigateur pour aider aux réponses peu similaires</small></span><b>PYNet</b></div>
+      <div class="row"><span>Ollama<small>Connexion optionnelle à un modèle de langage local, tel que llama3.2</small></span><b>Optionnel</b></div>
+      <div class="row"><span>Routage<small>Selon la similarité et les seuils, PYchat choisit le moteur le plus adapté</small></span><b>Automatique</b></div>
+    </div>
+    <div class="card"><h3>Fonctionnalités</h3>
+      <p class="note">PYchat permet de créer et gérer plusieurs discussions, de rechercher dans l’historique, d’envoyer des messages avec Entrée, de joindre des fichiers, de résumer des textes, de déboguer du HTML, de générer des images 8×8 et d’exporter une conversation en Markdown ou l’historique complet en JSON.</p>
+      <p class="note">Le mode vocal prend en charge la dictée par reconnaissance vocale et la lecture à voix haute des réponses. Le Neural Lab permet de consulter les données, lancer un entraînement, suivre les courbes et tester le réseau. Les paramètres permettent d’ajuster le thème, la taille du texte, la largeur des messages, les suggestions, les seuils des moteurs, la voix et la sauvegarde locale.</p>
+    </div>
+    <div class="card"><h3>Vie privée</h3>
+      <p class="note">Par défaut, PYchat fonctionne entièrement en local : les conversations, le prénom éventuellement mémorisé, les réglages et les corpus restent dans le stockage du navigateur. Aucune inscription n’est nécessaire pour utiliser le mode invité.</p>
+      <p class="note">Si tu connectes Ollama, les messages envoyés à un modèle externe sont traités par ce service local selon sa configuration. L’application n’ajoute pas de collecte de données distante de son côté.</p>
+    </div>
+    <div class="card"><h3>Raccourcis utiles</h3>
+      <div class="row"><span>Nouvelle discussion</span><span class="kbd">Ctrl</span> <span class="kbd">Maj</span> <span class="kbd">O</span></div>
+      <div class="row"><span>Barre de commandes</span><span class="kbd">Ctrl</span> <span class="kbd">K</span></div>
+      <div class="row"><span>Mode réflexion</span><span class="kbd">Alt</span> <span class="kbd">R</span></div>
+      <div class="row"><span>Accepter une suggestion</span><span class="kbd">Tab</span> ou <span class="kbd">→</span></div>
+      <div class="row"><span>Saut de ligne</span><span class="kbd">Maj</span> + <span class="kbd">Entrée</span></div>
+    </div>
+    <div class="card"><h3>Limites</h3>
+      <p class="note">PYchat est un projet local et pédagogique : ses réponses dépendent de la qualité et de la taille de ses corpus, ainsi que des réglages choisis. Markov peut produire des phrases improbables, PYNet peut s’abstenir si sa confiance est faible, et Ollama nécessite une installation séparée.</p>
+      <p class="note">Pour des informations médicales, juridiques, financières ou de sécurité importantes, vérifie toujours les réponses auprès de sources fiables.</p>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var o=document.getElementById('aboutOverlay');
+  document.getElementById('aboutBtn').onclick=function(){o.classList.add('on');};
+  document.getElementById('aboutClose').onclick=function(){o.classList.remove('on');};
+  o.addEventListener('click',function(e){if(e.target===o)o.classList.remove('on');});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')o.classList.remove('on');});
+})();
+</script>
+
 </body>
 </html>
